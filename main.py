@@ -1,1 +1,2 @@
-asdas
+def main():
+    return
