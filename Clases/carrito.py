@@ -37,8 +37,15 @@ class Carrito:
     def eliminar_producto(self, producto: Producto) -> None:
         for item in self._items:
             if item[0] == producto: #item[0] es el producto y item[1] es la cantidad
+                cantidad_en_carrito = item[1]
+                # Restaurar el stock del producto
+                stock_actual = producto.get_stock()
+                nuevo_stock = stock_actual + cantidad_en_carrito
+                producto.set_stock(nuevo_stock)
+                
                 self._items.remove(item) 
                 print(f"{producto.nombre} eliminado del carrito")
+                print(f"Stock restaurado: {nuevo_stock}")
                 return
         print("Producto no encontrado en el carrito")
 
