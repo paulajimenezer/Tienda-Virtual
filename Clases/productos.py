@@ -21,7 +21,7 @@ class Producto(ABC):
         return self._stock
     
     def set_stock(self, stock:int) ->None:
-        self.stock = stock
+        self._stock = stock
     
      # Método abstracto (asegura que las hijas lo implementen)
     @abstractmethod
