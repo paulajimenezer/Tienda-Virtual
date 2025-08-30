@@ -4,18 +4,24 @@ from abc import ABC, abstractmethod
 
 # Clase Padre Abstracta
 class Producto(ABC):
-    def __init__(self, id:int, nombre:str, precio:float, categoria:str) ->None:
+    def __init__(self, id:int, nombre:str, precio:float, categoria:str, stock:int) ->None:
         self._id = id #(Encapsulado)
         self.nombre = nombre
         self._precio = precio #(Encapsulado)
         self.categoria = categoria
-    
+        self._stock = stock
     #Gets para los encapsulados
     def get_id(self) ->int:
         return self._id
     
     def get_precio(self) ->float:
         return self._precio
+    
+    def get_stock(self) ->int:
+        return self._stock
+    
+    def set_stock(self, stock:int) ->None:
+        self.stock = stock
     
      # Método abstracto (asegura que las hijas lo implementen)
     @abstractmethod
@@ -26,9 +32,9 @@ class Producto(ABC):
 
 #Clase hija electrónicos:    
 class ProductoElectronico(Producto):
-    def __init__(self, id:int, nombre:str, precio:float, marca:str, modelo:str, mesesGarantia:int) ->None:
+    def __init__(self, id:int, nombre:str, precio:float, marca:str, modelo:str, mesesGarantia:int, stock:int) ->None:
         #Le envía la información a la clase padre:
-        super().__init__(id, nombre, precio, "Electrónico")
+        super().__init__(id, nombre, precio, "Electrónico", stock)
         self.marca = marca
         self.modelo=modelo
         self.mesesGarantia = mesesGarantia  
@@ -36,13 +42,13 @@ class ProductoElectronico(Producto):
     # Polimorfismo (sobreescritura del método "__str__")
     def __str__(self) -> str:
         #:.2f para que el valor salga con 2 decimales
-        return f"Código: {self.get_id()}, nombre: {self.nombre}, marca: {self.marca}, precio: ${self.get_precio():.2f}, modelo: {self.modelo}, categoría: {self.categoria}, garantía: {self.mesesGarantia} meses."
+        return f"Código: {self.get_id()}, nombre: {self.nombre}, marca: {self.marca}, precio: ${self.get_precio():.2f}, modelo: {self.modelo}, categoría: {self.categoria}, garantía: {self.mesesGarantia} meses, stock: {self.get_stock()}"
     
 #Clase hija ropa:
 class ProductoRopa(Producto):
-    def __init__(self, id:int, nombre:str, precio:float, marca:str, material:str, talla:str, color:str) ->None:
+    def __init__(self, id:int, nombre:str, precio:float, marca:str, material:str, talla:str, color:str, stock:int) ->None:
         #Le envía la información a la clase padre:
-        super().__init__(id, nombre, precio, "Ropa")
+        super().__init__(id, nombre, precio, "Ropa", stock)
         self.marca=marca
         self.material=material
         self.talla=talla
@@ -51,13 +57,13 @@ class ProductoRopa(Producto):
      # Polimorfismo (sobreescritura del método "__str__")
     def __str__(self) -> str:
         #:.2f para que el valor salga con 2 decimales
-        return f"Código: {self.get_id()}, nombre: {self.nombre}, marca: {self.marca}, precio: ${self.get_precio():.2f}, categoría: {self.categoria}, talla: {self.talla}, color: {self.color}"
+        return f"Código: {self.get_id()}, nombre: {self.nombre}, marca: {self.marca}, precio: ${self.get_precio():.2f}, categoría: {self.categoria}, talla: {self.talla}, color: {self.color}, stock: {self.get_stock()}"
 
 #Clase hija comida:    
 class ProductoComida(Producto):
-    def __init__(self, id:int, nombre:str, precio:float, tipo:str, peso_gr:int, fechaVencimiento:str) ->None:
+    def __init__(self, id:int, nombre:str, precio:float, tipo:str, peso_gr:int, fechaVencimiento:str, stock:int) ->None:
         #Le envía la información a la clase padre:
-        super().__init__(id, nombre, precio, "Comida")
+        super().__init__(id, nombre, precio, "Comida", stock)
         self.tipo=tipo
         self.peso_gr=peso_gr #Peso en gramos
         self.fechaVencimiento=fechaVencimiento
@@ -65,15 +71,11 @@ class ProductoComida(Producto):
     # Polimorfismo (sobreescritura del método "__str__")
     def __str__(self) -> str:
         #:.2f para que el valor salga con 2 decimales
-        return f"Código: {self.get_id()}, nombre: {self.nombre}, precio: {self.get_precio():.2f}, categoría: {self.categoria}, tipo: {self.tipo}, peso en gramos: {self.peso_gr}, fecha de vencimiento: {self.fechaVencimiento}"
+        return f"Código: {self.get_id()}, nombre: {self.nombre}, precio: {self.get_precio():.2f}, categoría: {self.categoria}, tipo: {self.tipo}, peso en gramos: {self.peso_gr}, fecha de vencimiento: {self.fechaVencimiento}, stock: {self.get_stock()}"
 
 #PRUEBAS
 # Crear 1 producto de cada tipo
-computador = ProductoElectronico(1, "Computador Gamer", 1500.89898, "HP", "Pavilion", 24)
-camisa = ProductoRopa(2, "Camisa Formal", 4500.999, "Zara", "Algodón", "M", "Azul")
-manzana = ProductoComida(3, "Manzana Royal", 2.0976, "Fruta", 200, "2024-12-31")
+computador = ProductoElectronico(1, "Computador Gamer", 1500.89898, "HP", "Pavilion", 24, 10)
+camisa = ProductoRopa(2, "Camisa Formal", 4500.999, "Zara", "Algodón", "M", "Azul", 10)
+manzana = ProductoComida(3, "Manzana Royal", 2.0976, "Fruta", 200, "2024-12-31", 10)
 
-# Imprimir información de cada producto
-print(computador) #Python automáticamente llama a computador.__str__()
-print(camisa) #Python automáticamente llama a camisa.__str__()
-print(manzana) #Python automáticamente llama a manzana.__str__()
