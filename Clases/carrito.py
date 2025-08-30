@@ -15,11 +15,11 @@ class Carrito:
             # Verificar si el producto ya existe en el carrito
             # enumerate() devuelve pares (índice, valor) para poder modificar elementos específicos
             # i = índice de la posición en la lista (0, 1, 2, etc.)
-            for i, (prod, cant) in enumerate(self._items): 
-                if prod == producto:
+            for indice, (producto_existente, cantidad_actual) in enumerate(self._items): 
+                if producto_existente == producto:
                     # Si existe, actualizar la cantidad
-                    nueva_cantidad = cant + cantidad #cant es la cantidad actual en el carrito y cantidad es la nueva cantidad a agregar
-                    self._items[i] = (producto, nueva_cantidad)
+                    nueva_cantidad = cantidad_actual + cantidad #cantidad_actual es la cantidad actual en el carrito y cantidad es la nueva cantidad a agregar
+                    self._items[indice] = (producto, nueva_cantidad)
                     stock -= cantidad
                     producto.set_stock(stock)
                     print(f"Stock actual del producto '{producto.nombre}': {stock}")
