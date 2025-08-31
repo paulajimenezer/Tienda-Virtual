@@ -72,10 +72,3 @@ class ProductoComida(Producto):
     def __str__(self) -> str:
         #:.2f para que el valor salga con 2 decimales
         return f"Código: {self.get_id()}, nombre: {self.nombre}, precio: {self.get_precio():.2f}, categoría: {self.categoria}, tipo: {self.tipo}, peso en gramos: {self.peso_gr}, fecha de vencimiento: {self.fechaVencimiento}, stock: {self.get_stock()}"
-
-#PRUEBAS
-# Crear 1 producto de cada tipo
-computador = ProductoElectronico(1, "Computador Gamer", 1500.89898, "HP", "Pavilion", 24, 10)
-camisa = ProductoRopa(2, "Camisa Formal", 4500.999, "Zara", "Algodón", "M", "Azul", 10)
-manzana = ProductoComida(3, "Manzana Royal", 2.0976, "Fruta", 200, "2024-12-31", 10)
-
