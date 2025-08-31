@@ -1,3 +1,4 @@
+from .productos import Producto
 class Carrito:
     def __init__(self):
         self._items = []  # Lista de tuplas (producto, cantidad)
