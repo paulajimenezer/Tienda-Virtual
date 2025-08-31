@@ -1,10 +1,10 @@
-# 🛒 Tienda Virtual - Sistema de Gestión de Productos y Carrito de Compras
+# Tienda Virtual - Sistema de Gestión de Productos y Carrito de Compras
 
-## 📋 Descripción del Proyecto
+##  Descripción del Proyecto
 
 Sistema de tienda virtual desarrollado en Python que implementa un carrito de compras con gestión de productos, categorías, stock y sistema de descuentos. El proyecto utiliza Programación Orientada a Objetos (POO) con principios de encapsulación, herencia, polimorfismo y abstracción.
 
-## 🚀 Características Principales
+## Características Principales
 
 - **Gestión de Productos**: Sistema de categorías (Electrónicos, Ropa, Comida)
 - **Carrito de Compras**: Agregar, eliminar, visualizar y vaciar carrito
@@ -13,7 +13,7 @@ Sistema de tienda virtual desarrollado en Python que implementa un carrito de co
 - **Interfaz de Consola**: Menú interactivo para usuarios
 - **Validación de Datos**: Entradas validadas para prevenir errores
 
-## 🏗️ Estructura del Proyecto
+## Estructura del Proyecto
 Tienda-Virtual/
 │
 ├── Clases/
@@ -27,7 +27,7 @@ Tienda-Virtual/
 
 text
 
-## 🛍️ Categorías de Productos
+## Categorías de Productos
 
 ### 1. **Productos Electrónicos**
 - Atributos: Marca, modelo, meses de garantía
@@ -41,10 +41,11 @@ text
 - Atributos: Tipo, peso en gramos, fecha de vencimiento
 - Ejemplo: Frutas, cereales, lácteos
 
-## ⚙️ Instalación y Uso
+## Instalación y Uso
 
 ### Requisitos
 - Python 3.7 o superior
+- **Git** para clonar el repositorio
 - No se requieren dependencias externas
 
 ### Ejecución
@@ -57,7 +58,7 @@ cd Tienda-Virtual
 
 # Ejecutar la aplicación
 python main.py
-🎮 Funcionalidades del Sistema
+Funcionalidades del Sistema
 Menú Principal
 Ver productos disponibles - Lista todos los productos con detalles
 
@@ -75,7 +76,7 @@ Vaciar carrito - Elimina todos los productos
 
 Salir - Finaliza la aplicación
 
-🧩 Principios de POO Implementados
+Principios de POO Implementados
 Abstracción: Clase base Producto con métodos abstractos
 
 Encapsulación: Atributos privados con getters y setters
@@ -84,22 +85,27 @@ Herencia: Categorías de productos heredan de clase base
 
 Polimorfismo: Métodos str personalizados por categoría
 
-📦 Productos Predefinidos
+Productos Predefinidos
 El sistema incluye 15 productos de ejemplo en 3 categorías:
 
 5 Electrónicos: Computadores, smartphones, tablets
-
+docs: Add comprehensive README.md with project documentation
 5 Ropa: Camisas, jeans, chaquetas, zapatos
 
 5 Comida: Frutas, cereales, lácteos, pasta
 
-👥 Autores
+Interactuar con el menú:
+Seleccionar opciones del 1 al 8 usando números
+Seguir las instrucciones en pantalla
+Probar todas las funcionalidades del sistema
+
+Autores
 Paula Jiménez - @paulajimenezer
 Miguel Mejía - @miguemjia
 Santiago Ospina - @santi-osp
 
 Equipo de Desarrollo - Colaboradores del proyecto
 
-📄 Licencia
+Licencia
 Este proyecto está bajo la Licencia MIT.# Tienda-Virtual
 Proyecto de tienda virtual para el curso de programación de software
