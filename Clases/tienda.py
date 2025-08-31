@@ -1,11 +1,13 @@
 from .carrito import Carrito
 from .productos import ProductoElectronico, ProductoRopa, ProductoComida
+from abc import ABC, abstractmethod
 
 # Clase Descuento (Polimorfismo)
 
-class Descuento:
+class Descuento(ABC):
+    @abstractmethod
     def aplicar_descuento(self, total: float) -> float:
-        return total  # por defecto no hace nada
+        pass
 
 class DescuentoPorcentaje(Descuento):
     def __init__(self, porcentaje: float):
