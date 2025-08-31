@@ -26,7 +26,7 @@ class DescuentoFijo(Descuento):
 # Clase Tienda (Menú Principal)
 
 class Tienda:
-    def __init__(self):
+    def __init__(self) -> None:
         # Productos iniciales de prueba
         self.productos_disponibles = [
             # Productos Electrónicos
@@ -61,8 +61,9 @@ class Tienda:
             print("4. Ver carrito")
             print("5. Calcular total")
             print("6. Aplicar descuento")
-            print("7. Vaciar carrito")
-            print("8. Salir")
+            print("7. Buscar producto en carrito")
+            print("8. Vaciar carrito")
+            print("9. Salir")
 
             entrada = input("Seleccione una opción: ")
             
@@ -83,12 +84,14 @@ class Tienda:
                 elif opcion == 6:
                     self.gestionar_descuento()
                 elif opcion == 7:
-                    self.carrito.vaciar()
+                    self.buscar_en_carrito()
                 elif opcion == 8:
+                    self.carrito.vaciar()
+                elif opcion == 9:
                     print("Gracias por su compra. ¡Hasta luego!")
                     break
                 else:
-                    print("Opción inválida. Debe seleccionar un número entre 1 y 8.")
+                    print("Opción inválida. Debe seleccionar un número entre 1 y 9.")
             else:
                 print("Debe ingresar un número válido, no texto.")
 
@@ -177,3 +180,7 @@ class Tienda:
         print(f"Total original: ${total:.2f}")
         print(f"Total con descuento: ${total_desc:.2f}")
         print(f"Ahorro: ${total - total_desc:.2f}")
+
+    def buscar_en_carrito(self) -> None:
+        nombre = input("Ingrese el nombre del producto a buscar: ")
+        self.carrito.buscar_producto(nombre)
