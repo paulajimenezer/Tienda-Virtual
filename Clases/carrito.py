@@ -62,10 +62,18 @@ class Carrito:
             total += subtotal
             print(f"> {producto.nombre} / {cantidad} x ${producto.get_precio():.2f} = ${subtotal:.2f}")
         print(f"Total actual: ${total:.2f}")
+    
+    
+    def mostrar_total(self) -> None: #Este metodo puede ser repetitivo, pero el usuario podria preferir que se muestre el total unicamente o puede usarse para el momento de agregar o eliminar un producto, entonces creo que es mejor tenerlo separado.
+        total = 0
+        for producto, cantidad in self._items:
+            subtotal = producto.get_precio() * cantidad
+            total += subtotal
+        print(f"Total actual: ${total:.2f}")
 
     def buscar_producto(self, producto_nombre:str) -> None: #En caso de carritos muy extensos el usuario podria necesitar buscar si ya agrego un producto y de ser asi cuanta cantidad
         for producto, cantidad in self._items:
-            if producto.nombre.lower() == producto_nombre.lower(): #lower() para que no importe si el usuario escribe mayusculas o minusculas
+            if producto.nombre.lower() == producto_nombre.lower():
                 print(f"El producto '{producto.nombre}' está en el carrito con {cantidad} unidad(es).")
         return None
 
