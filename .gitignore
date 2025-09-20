@@ -1,8 +1,10 @@
+#Entorno virtual
+.venv/
+
+# Archivos de cache de Python
 "__pycache__/" 
 "*.pyc" 
 "*.pyo" 
 "*.pyd" 
-"" 
-"# Python cache files" 
-"__pycache__/" 
-"*.pyc" 
+
+

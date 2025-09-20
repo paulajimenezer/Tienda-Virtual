@@ -5,6 +5,10 @@ Configuración de la base de datos
 Configuraciones centralizadas para la conexión a la base de datos.
 """
 
+from dotenv import load_dotenv
+
+# Para cargar la credencial de la BD
+load_dotenv()
 import os
 from typing import Optional
 

@@ -6,7 +6,9 @@ Comprobantes generados a partir de pedidos. Incluye validación y utilidades
 para serialización.
 """
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, text
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
@@ -17,24 +19,28 @@ from database.database import Base
 from sqlalchemy.sql import func
 
 
-class FACTURAS(Base):
-    __tablename__ = "FACTURAS"
+class Facturas(Base):
+    __tablename__ = "facturas"
 
-    id = Column(Integer, primary_key=True)
-    id_pedido = Column(Integer, ForeignKey("PEDIDOS.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_pedido = Column(UUID(as_uuid=True), ForeignKey("pedidos.id"))
     numero_factura = Column(String(100), unique=True, nullable=False)
     fecha_emision = Column(DateTime, nullable=False)
     subtotal = Column(Float, nullable=False)
-    impuestos = Column(Float, nullable=False)
+    impuesto = Column(Float, nullable=False)
     total = Column(Float, nullable=False)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    pedido = relationship("PEDIDOS", back_populates="factura")
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
+    pedido = relationship("Pedidos", back_populates="factura")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
 
 
 class FacturaModel(BaseModel):

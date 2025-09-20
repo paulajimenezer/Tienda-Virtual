@@ -6,7 +6,9 @@ Clasificación de productos. Valida nombres y descripciones y provee utilidades
 para serialización y depuración.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, text
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
@@ -14,20 +16,24 @@ from database.database import Base
 from sqlalchemy.sql import func
 
 
-class CATEGORIAS(Base):
-    __tablename__ = "CATEGORIAS"
+class Categorias(Base):
+    __tablename__ = "categorias"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre = Column(String(100), nullable=False)
     descripcion = Column(String(255))
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
-    productos = relationship("PRODUCTOS", back_populates="categoria")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
+    producto = relationship("Productos", back_populates="categoria")
 
 
 class CategoriaModel(BaseModel):

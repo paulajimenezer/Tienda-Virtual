@@ -6,7 +6,9 @@ Direcciones de usuarios para envío/facturación. Valida campos de estructura
 básica y normaliza strings.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, text
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.sql import func
 from database.database import Base
 from sqlalchemy.orm import relationship
@@ -14,25 +16,29 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 
 
-class DIRECCIONES(Base):
-    __tablename__ = "DIRECCIONES"
+class Direcciones(Base):
+    __tablename__ = "direcciones"
 
-    id = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer, ForeignKey("USUARIOS.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_usuario = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"))
     direccion = Column(String(255), nullable=False)
     ciudad = Column(String(100), nullable=False)
     codigo_postal = Column(String(20))
     pais = Column(String(100), nullable=False)
     principal = Column(Boolean, default=False)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario = relationship("USUARIOS", back_populates="direcciones")
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
-    pedidos = relationship("PEDIDOS", back_populates="direccion")
+    usuario = relationship("Usuarios", back_populates="direccion")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
+    pedido = relationship("Pedidos", back_populates="direccion")
 
 
 class DireccionModel(BaseModel):

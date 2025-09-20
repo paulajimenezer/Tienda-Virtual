@@ -6,37 +6,45 @@ Pedidos realizados por los usuarios. Incluye validaciones y utilidades de
 serialización.
 """
 
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, text
 from sqlalchemy.orm import relationship
-from typing import Any, Optional
+from typing import Optional
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from database.database import Base
 from sqlalchemy.sql import func
 
 
-class PEDIDOS(Base):
-    __tablename__ = "PEDIDOS"
+class Pedidos(Base):
+    __tablename__ = "pedidos"
 
-    id = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer, ForeignKey("USUARIOS.id"))
-    id_direccion = Column(Integer, ForeignKey("DIRECCIONES.id"))
-    id_descuento = Column(Integer, ForeignKey("DESCUENTOS.id"), nullable=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_usuario = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"))
+    id_direccion = Column(UUID(as_uuid=True), ForeignKey("direcciones.id"))
+    id_descuento = Column(
+        UUID(as_uuid=True), ForeignKey("descuentos.id"), nullable=True
+    )
     fecha_pedido = Column(DateTime, nullable=False)
     estado = Column(String(50), nullable=False)
     total = Column(Float, nullable=False)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario = relationship("USUARIOS", back_populates="pedidos")
-    direccion = relationship("DIRECCIONES", back_populates="pedidos")
-    descuento = relationship("DESCUENTOS", back_populates="pedidos")
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
-    pedido_items = relationship("PEDIDO_ITEMS", back_populates="pedido")
-    factura = relationship("FACTURAS", back_populates="pedido", uselist=False)
+    usuario = relationship("Usuarios", back_populates="pedido")
+    direccion = relationship("Direcciones", back_populates="pedido")
+    descuento = relationship("Descuentos", back_populates="pedido")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
+    pedido_item = relationship("Pedido_items", back_populates="pedido")
+    factura = relationship("Facturas", back_populates="pedido", uselist=False)
 
 
 class PedidoModel(BaseModel):

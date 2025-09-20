@@ -6,27 +6,33 @@ Catálogo para estandarizar tipos de documento. Valida y normaliza cadenas.
 """
 
 # Usar la Base compartida y func.now()
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 from database.database import Base
 from sqlalchemy.sql import func
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 
 
-class TIPO_DOCUMENTO(Base):
-    __tablename__ = "TIPO_DOCUMENTO"
+class Tipo_documento(Base):
+    __tablename__ = "tipo_documento"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre = Column(String(50), nullable=False)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
-    usuarios = relationship("USUARIOS", back_populates="tipo_documento")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
+    usuarios = relationship("Usuarios", back_populates="tipo_documento")
 
 
 class TipoDocumentoModel(BaseModel):

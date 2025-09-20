@@ -6,29 +6,33 @@ Tabla de catálogo para sexo/género, usada para estandarizar la captura de
 información en usuarios. Valida y normaliza cadenas.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, text
-from sqlalchemy.ext.declarative import declarative_base
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from sqlalchemy.sql import func
+from database.database import Base
 
-Base = declarative_base()
 
+class Sexo(Base):
+    __tablename__ = "sexo"
 
-class SEXO(Base):
-    __tablename__ = "SEXO"
-
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     codigo = Column(String(1), nullable=False, unique=True)
     nombre = Column(String(10), nullable=False)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
 
 
 class SexoModel(BaseModel):

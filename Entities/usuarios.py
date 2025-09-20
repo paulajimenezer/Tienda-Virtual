@@ -8,7 +8,9 @@ mostrado en Programacion-de-software/03-Introduccion-ORM/entities/usuario.py
 al esquema de la entidad USUARIOS de este proyecto.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, text
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, text
 from sqlalchemy.sql import func
 from database.database import Base
 from sqlalchemy.orm import relationship
@@ -17,7 +19,7 @@ from datetime import datetime
 from typing import Optional, List
 
 
-class USUARIOS(Base):
+class Usuarios(Base):
     """Modelo de Usuario que representa la tabla 'USUARIOS'.
 
     Atributos:
@@ -37,40 +39,44 @@ class USUARIOS(Base):
             fecha_edicion: Fecha de última edición
     """
 
-    __tablename__ = "USUARIOS"
+    __tablename__ = "usuarios"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre = Column(String(100), nullable=False)
     apellido = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    id_sexo = Column(Integer, ForeignKey("SEXO.id"))
-    id_tipo_documento = Column(Integer, ForeignKey("TIPO_DOCUMENTO.id"))
+    id_sexo = Column(UUID(as_uuid=True), ForeignKey("sexo.id"))
+    id_tipo_documento = Column(UUID(as_uuid=True), ForeignKey("tipo_documento.id"))
     numero_documento = Column(String(20), unique=True, nullable=False)
-    id_rol = Column(Integer, ForeignKey("ROLES.id"))
+    id_rol = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
     activo = Column(Boolean, default=True)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    sexo = relationship("SEXO")
-    tipo_documento = relationship("TIPO_DOCUMENTO", back_populates="usuarios")
-    rol = relationship("ROLES", back_populates="usuarios")
+    sexo = relationship("Sexo")
+    tipo_documento = relationship("Tipo_documento", back_populates="usuarios")
+    rol = relationship("Roles", back_populates="usuarios")
     usuario_crea = relationship(
-        "USUARIOS", foreign_keys=[id_usuario_crea], remote_side=[id]
+        "Usuarios", foreign_keys=[id_usuario_crea], remote_side=[id]
     )
     usuario_edita = relationship(
-        "USUARIOS", foreign_keys=[id_usuario_edita], remote_side=[id]
+        "Usuarios", foreign_keys=[id_usuario_edita], remote_side=[id]
     )
-    direcciones = relationship("DIRECCIONES", back_populates="usuario")
-    carritos = relationship("CARRITOS", back_populates="usuario")
-    pedidos = relationship("PEDIDOS", back_populates="usuario")
+    direccion = relationship("Direcciones", back_populates="usuario")
+    carrito = relationship("Carritos", back_populates="usuario")
+    pedido = relationship("Pedidos", back_populates="usuario")
 
     def __repr__(self) -> str:
-        """Representación legible del objeto USUARIOS."""
+        """Representación legible del objeto usuarios."""
         return (
-            f"<USUARIOS(id={self.id}, nombre='{getattr(self, 'nombre', None)}', "
+            f"<usuarios(id={self.id}, nombre='{getattr(self, 'nombre', None)}', "
             f"apellido='{getattr(self, 'apellido', None)}', email='{getattr(self, 'email', None)}')>"
         )
 

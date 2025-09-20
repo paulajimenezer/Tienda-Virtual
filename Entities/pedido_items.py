@@ -6,7 +6,9 @@ Entidad Pedido Items
 serialización.
 """
 
-from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey, text
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
@@ -16,23 +18,27 @@ from database.database import Base
 from sqlalchemy.sql import func
 
 
-class PEDIDO_ITEMS(Base):
-    __tablename__ = "PEDIDO_ITEMS"
+class Pedido_items(Base):
+    __tablename__ = "pedido_items"
 
-    id = Column(Integer, primary_key=True)
-    id_pedido = Column(Integer, ForeignKey("PEDIDOS.id"))
-    id_producto = Column(Integer, ForeignKey("PRODUCTOS.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_pedido = Column(UUID(as_uuid=True), ForeignKey("pedidos.id"))
+    id_producto = Column(UUID(as_uuid=True), ForeignKey("productos.id"))
     cantidad = Column(Integer, nullable=False)
     precio_unitario = Column(Float, nullable=False)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    pedido = relationship("PEDIDOS", back_populates="pedido_items")
-    producto = relationship("PRODUCTOS", back_populates="pedido_items")
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
+    pedido = relationship("Pedidos", back_populates="pedido_item")
+    producto = relationship("Productos", back_populates="pedido_item")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
 
 
 class PedidoItemModel(BaseModel):

@@ -6,7 +6,9 @@ Items contenidos en un carrito. Incluye validaciones de cantidad y precio
 mediante Pydantic, y utilidades de serialización/depuración.
 """
 
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, text
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
@@ -16,22 +18,25 @@ from database.database import Base
 from sqlalchemy.sql import func
 
 
-class CARRITO_ITEMS(Base):
-    __tablename__ = "CARRITO_ITEMS"
-
-    id = Column(Integer, primary_key=True)
-    id_carrito = Column(Integer, ForeignKey("CARRITOS.id"))
-    id_producto = Column(Integer, ForeignKey("PRODUCTOS.id"))
+class Carrito_items(Base):
+    __tablename__ = "carrito_items"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_carrito = Column(UUID(as_uuid=True), ForeignKey("carritos.id"))
+    id_producto = Column(UUID(as_uuid=True), ForeignKey("productos.id"))
     cantidad = Column(Integer, nullable=False, default=1)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    carrito = relationship("CARRITOS", back_populates="carrito_items")
-    producto = relationship("PRODUCTOS", back_populates="carrito_items")
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
+    carrito = relationship("Carritos", back_populates="carrito_item")
+    producto = relationship("Productos", back_populates="carrito_item")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
 
 
 class CarritoItemModel(BaseModel):

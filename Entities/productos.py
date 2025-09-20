@@ -6,6 +6,8 @@ Catálogo de productos. Incluye validaciones de datos, normalización y
 utilidades de serialización.
 """
 
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import (
     Column,
     Integer,
@@ -14,7 +16,6 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Boolean,
-    text,
 )
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
@@ -25,27 +26,30 @@ from database.database import Base
 from sqlalchemy.sql import func
 
 
-class PRODUCTOS(Base):
-    __tablename__ = "PRODUCTOS"
+class Productos(Base):
+    __tablename__ = "productos"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre = Column(String(100), nullable=False)
     descripcion = Column(String(500))
     precio = Column(Float, nullable=False)
     stock = Column(Integer, nullable=False)
-    id_categoria = Column(Integer, ForeignKey("CATEGORIAS.id"))
-    imagen_url = Column(String(255))
+    id_categoria = Column(UUID(as_uuid=True), ForeignKey("categorias.id"))
     activo = Column(Boolean, default=True)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    categoria = relationship("CATEGORIAS", back_populates="productos")
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
-    carrito_items = relationship("CARRITO_ITEMS", back_populates="producto")
-    pedido_items = relationship("PEDIDO_ITEMS", back_populates="producto")
+    categoria = relationship("Categorias", back_populates="producto")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
+    carrito_item = relationship("Carrito_items", back_populates="producto")
+    pedido_items = relationship("Pedido_items", back_populates="producto")
 
 
 class ProductoModel(BaseModel):

@@ -6,15 +6,15 @@ Reglas de descuento aplicables a carritos o productos. Incluye validaciones
 básicas y utilidades de serialización.
 """
 
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import (
     Column,
-    Integer,
     String,
     Float,
     DateTime,
     ForeignKey,
     Boolean,
-    text,
 )
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
@@ -23,23 +23,27 @@ from database.database import Base
 from sqlalchemy.sql import func
 
 
-class DESCUENTOS(Base):
-    __tablename__ = "DESCUENTOS"
+class Descuentos(Base):
+    __tablename__ = "descuentos"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     codigo = Column(String(50), unique=True, nullable=False)
     porcentaje = Column(Float, nullable=False)
     fecha_inicio = Column(DateTime, nullable=False)
     fecha_fin = Column(DateTime, nullable=False)
     activo = Column(Boolean, default=True)
-    id_usuario_crea = Column(Integer, ForeignKey("USUARIOS.id"), nullable=False)
-    id_usuario_edita = Column(Integer, ForeignKey("USUARIOS.id"), nullable=True)
+    id_usuario_crea = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+    )
+    id_usuario_edita = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario_crea = relationship("USUARIOS", foreign_keys=[id_usuario_crea])
-    usuario_edita = relationship("USUARIOS", foreign_keys=[id_usuario_edita])
-    pedidos = relationship("PEDIDOS", back_populates="descuento")
+    usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
+    usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
+    pedido = relationship("Pedidos", back_populates="descuento")
 
 
 class DescuentoModel(BaseModel):

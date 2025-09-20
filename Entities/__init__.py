@@ -8,7 +8,7 @@ para validación y serialización.
 
 # Usuarios
 from .usuarios import (
-    USUARIOS,
+    Usuarios,
     UsuarioCreate,
     UsuarioUpdate,
     UsuarioResponse,
@@ -16,14 +16,14 @@ from .usuarios import (
 )
 
 # Catálogo comercial
-from .categorias import CATEGORIAS, CategoriaCreate, CategoriaUpdate, CategoriaResponse
-from .productos import PRODUCTOS, ProductoCreate, ProductoUpdate, ProductoResponse
+from .categorias import Categorias, CategoriaCreate, CategoriaUpdate, CategoriaResponse
+from .productos import Productos, ProductoCreate, ProductoUpdate, ProductoResponse
 
 # Estandarización de datos
-from .roles import ROLES, RolCreate, RolUpdate, RolResponse
-from .sexo import SEXO, SexoCreate, SexoUpdate, SexoResponse
+from .roles import Roles, RolCreate, RolUpdate, RolResponse
+from .sexo import Sexo, SexoCreate, SexoUpdate, SexoResponse
 from .tipo_documento import (
-    TIPO_DOCUMENTO,
+    Tipo_documento,
     TipoDocumentoCreate,
     TipoDocumentoUpdate,
     TipoDocumentoResponse,
@@ -31,89 +31,89 @@ from .tipo_documento import (
 
 # Recursos de usuario
 from .direcciones import (
-    DIRECCIONES,
+    Direcciones,
     DireccionCreate,
     DireccionUpdate,
     DireccionResponse,
 )
 
 # Compras
-from .carritos import CARRITOS, CarritoCreate, CarritoUpdate, CarritoResponse
+from .carritos import Carritos, CarritoCreate, CarritoUpdate, CarritoResponse
 from .carrito_items import (
-    CARRITO_ITEMS,
+    Carrito_items,
     CarritoItemCreate,
     CarritoItemUpdate,
     CarritoItemResponse,
 )
-from .descuentos import DESCUENTOS, DescuentoCreate, DescuentoUpdate, DescuentoResponse
+from .descuentos import Descuentos, DescuentoCreate, DescuentoUpdate, DescuentoResponse
 
 # Pedidos
-from .pedidos import PEDIDOS, PedidoCreate, PedidoUpdate, PedidoResponse
+from .pedidos import Pedidos, PedidoCreate, PedidoUpdate, PedidoResponse
 from .pedido_items import (
-    PEDIDO_ITEMS,
+    Pedido_items,
     PedidoItemCreate,
     PedidoItemUpdate,
     PedidoItemResponse,
 )
-from .facturas import FACTURAS, FacturaCreate, FacturaUpdate, FacturaResponse
+from .facturas import Facturas, FacturaCreate, FacturaUpdate, FacturaResponse
 
 __all__ = [
     # Usuarios
-    "USUARIOS",
+    "Usuarios",
     "UsuarioCreate",
     "UsuarioUpdate",
     "UsuarioResponse",
     "UsuarioListResponse",
     # Catálogo comercial
-    "CATEGORIAS",
+    "Categorias",
     "CategoriaCreate",
     "CategoriaUpdate",
     "CategoriaResponse",
-    "PRODUCTOS",
+    "Productos",
     "ProductoCreate",
     "ProductoUpdate",
     "ProductoResponse",
     # Estandarización de datos
-    "ROLES",
+    "Roles",
     "RolCreate",
     "RolUpdate",
     "RolResponse",
-    "SEXO",
+    "Sexo",
     "SexoCreate",
     "SexoUpdate",
     "SexoResponse",
-    "TIPO_DOCUMENTO",
+    "Tipo_documento",
     "TipoDocumentoCreate",
     "TipoDocumentoUpdate",
     "TipoDocumentoResponse",
     # Recursos de usuario
-    "DIRECCIONES",
+    "Direcciones",
     "DireccionCreate",
     "DireccionUpdate",
     "DireccionResponse",
     # Compras
-    "CARRITOS",
+    "Carritos",
     "CarritoCreate",
     "CarritoUpdate",
     "CarritoResponse",
-    "CARRITO_ITEMS",
+    "Carrito_items",
     "CarritoItemCreate",
     "CarritoItemUpdate",
     "CarritoItemResponse",
-    "DESCUENTOS",
+    "Descuentos",
     "DescuentoCreate",
     "DescuentoUpdate",
     "DescuentoResponse",
     # Pedidos
-    "PEDIDOS",
+    "Pedidos",
     "PedidoCreate",
     "PedidoUpdate",
     "PedidoResponse",
-    "PEDIDO_ITEMS",
+    "Pedido_items",
     "PedidoItemCreate",
     "PedidoItemUpdate",
     "PedidoItemResponse",
-    "FACTURAS",
+    "Facturas",
     "FacturaCreate",
     "FacturaUpdate",
     "FacturaResponse",
