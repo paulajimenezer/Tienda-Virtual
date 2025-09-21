@@ -7,22 +7,27 @@ Configuraciones centralizadas para la conexión a la base de datos.
 
 from dotenv import load_dotenv
 
-# Para cargar la credencial de la BD
+"""
+    Cargar la credencial de la BD
+"""
 load_dotenv()
 import os
 from typing import Optional
 
-# URL de la base de datos
-# Por defecto usa SQLite, pero puede cambiarse por PostgreSQL, MySQL, etc.
+"""
+    URL de la base de datos
+    Por defecto usa SQLite, pero puede cambiarse por PostgreSQL, MySQL, etc.
+"""
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./ejemplo_orm.db")
 
-# Configuraciones adicionales
+"""
+    Configuraciones adicionales
+"""
 DB_ECHO: bool = os.getenv("DB_ECHO", "True").lower() == "true"
 DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "5"))
 DB_MAX_OVERFLOW: int = int(os.getenv("DB_MAX_OVERFLOW", "10"))
 
 
-# Configuraciones específicas para diferentes entornos
 class DatabaseConfig:
     """Configuración de base de datos para diferentes entornos"""
 

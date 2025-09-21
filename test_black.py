@@ -1,4 +1,0 @@
-def hola():
-    x = 1
-    if x > 0:
-        print("Black funciona!")

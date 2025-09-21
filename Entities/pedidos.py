@@ -6,6 +6,7 @@ Pedidos realizados por los usuarios. Incluye validaciones y utilidades de
 serialización.
 """
 
+from typing import Any
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, text

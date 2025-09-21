@@ -14,19 +14,22 @@ import logging
 
 from .config import DATABASE_URL, DB_ECHO, DB_POOL_SIZE, DB_MAX_OVERFLOW
 
-# Configurar logging
+"""
+    Configurar logging
+"""
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# Crear la clase base para los modelos
 class Base(DeclarativeBase):
     """Base declarativa común a todas las entidades."""
 
     pass
 
 
-# Configurar el motor de base de datos
+"""
+    Configurar el motor de base de datos
+"""
 engine = create_engine(
     DATABASE_URL,
     echo=DB_ECHO,
@@ -36,7 +39,9 @@ engine = create_engine(
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
 )
 
-# Crear la fábrica de sesiones
+"""
+    Crear la fábrica de sesiones
+"""
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -62,10 +67,6 @@ def get_session_context() -> Generator[Session, None, None]:
 
     Yields:
         Session: Sesión de SQLAlchemy
-
-    Example:
-        with get_session_context() as session:
-            user = session.query(Usuario).first()
     """
     session = SessionLocal()
     try:
@@ -97,9 +98,7 @@ def create_tables():
 
 def drop_tables():
     """
-    Elimina todas las tablas de la base de datos
-
-    ⚠️ CUIDADO: Esta función elimina TODOS los datos
+    Elimina todas las tablas y datos de la base de datos
     """
     try:
         logger.warning("Eliminando todas las tablas...")
