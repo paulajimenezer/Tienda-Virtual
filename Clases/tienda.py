@@ -2,8 +2,6 @@ from .carrito import Carrito
 from .productos import ProductoElectronico, ProductoRopa, ProductoComida
 from abc import ABC, abstractmethod
 
-# Clase Descuento (Polimorfismo)
-
 
 class Descuento(ABC):
     @abstractmethod
@@ -16,9 +14,7 @@ class DescuentoPorcentaje(Descuento):
         self.porcentaje = porcentaje
 
     def aplicar_descuento(self, total: float) -> float:
-        return total * (
-            1 - self.porcentaje / 100
-        )  # Este metodo aplica un descuento del 10% al total del monto
+        return total * (1 - self.porcentaje / 100)
 
 
 class DescuentoFijo(Descuento):
@@ -26,19 +22,13 @@ class DescuentoFijo(Descuento):
         self.monto = monto
 
     def aplicar_descuento(self, total: float) -> float:
-        return max(
-            0, total - self.monto
-        )  # Este metodo aplica un descuento fijo de 20$ y con max 0 impide que el resultado sea negativo
-
-
-# Clase Tienda (Menú Principal)
+        return max(0, total - self.monto)
 
 
 class Tienda:
     def __init__(self) -> None:
-        # Productos iniciales de prueba
+
         self.productos_disponibles = [
-            # Productos Electrónicos
             ProductoElectronico(
                 1, "Computador Gamer", 1500.90, "HP", "Pavilion", 24, 5
             ),
@@ -52,7 +42,6 @@ class Tienda:
                 4, "Auriculares Bluetooth", 249.99, "Sony", "WH-1000XM5", 12, 20
             ),
             ProductoElectronico(5, "Tablet", 450.75, "Apple", "iPad Air", 12, 12),
-            # Productos de Ropa
             ProductoRopa(6, "Camisa Formal", 45.99, "Zara", "Algodón", "M", "Azul", 10),
             ProductoRopa(
                 7, "Jeans Clásicos", 75.50, "Levi's", "Denim", "32", "Negro", 25
@@ -71,7 +60,6 @@ class Tienda:
                 "Blanco",
                 18,
             ),
-            # Productos de Comida
             ProductoComida(11, "Manzana Royal", 2.09, "Fruta", 200, "2024-12-31", 50),
             ProductoComida(
                 12, "Cereal Integral", 8.75, "Desayuno", 500, "2025-06-15", 30
@@ -88,7 +76,7 @@ class Tienda:
 
     def mostrar_menu(
         self,
-    ):  # Menú principal, con todas las opciones disponibles para el usuario
+    ):
         while True:
             print("\n--- MENÚ TIENDA ONLINE ---")
             print("1. Ver productos disponibles")
@@ -103,7 +91,6 @@ class Tienda:
 
             entrada = input("Seleccione una opción: ")
 
-            # Validar que sea un número
             if entrada.isdigit():
                 opcion = int(entrada)
 
@@ -133,21 +120,19 @@ class Tienda:
 
     def ver_productos(
         self,
-    ):  # Muestra todos los productos disponibles en la tienda recorriendolos en un for
+    ):
         print("\n--- PRODUCTOS DISPONIBLES ---")
         for i, producto in enumerate(self.productos_disponibles, start=1):
             print(f"[{i}] {producto}")
 
     def agregar_al_carrito(
         self,
-    ):  # Pide al usuario el id del producto y la cantidad, valida que el id sea correcto y llama al metodo agregar_producto del carrito
+    ):
         entrada_producto = input("Ingrese el número del producto: ")
 
-        # Validar que sea un número
         if entrada_producto.isdigit():
             id_producto = int(entrada_producto)
 
-            # Validar que el número esté en el rango correcto
             if id_producto < 1 or id_producto > len(self.productos_disponibles):
                 print(
                     f"Producto no válido. Debe seleccionar un número entre 1 y {len(self.productos_disponibles)}."
@@ -159,11 +144,9 @@ class Tienda:
 
         entrada_cantidad = input("Ingrese la cantidad: ")
 
-        # Validar que sea un número
         if entrada_cantidad.isdigit():
             cantidad = int(entrada_cantidad)
 
-            # Validar que la cantidad sea positiva
             if cantidad <= 0:
                 print("La cantidad debe ser mayor a 0.")
                 return
@@ -171,7 +154,6 @@ class Tienda:
             print("Debe ingresar un número válido para la cantidad.")
             return
 
-        # Convertir a índice de lista (restar 1)
         indice_producto = id_producto - 1
         self.carrito.agregar_producto(
             self.productos_disponibles[indice_producto], cantidad
@@ -179,7 +161,7 @@ class Tienda:
 
     def eliminar_del_carrito(
         self,
-    ):  # Pide al usuario el nombre del producto a eliminar, busca el producto en la lista de productos disponibles y llama al metodo eliminar_producto del carrito
+    ):
         nombre = input("Ingrese el nombre del producto a eliminar: ")
         for producto in self.productos_disponibles:
             if producto.nombre.lower() == nombre.lower():
@@ -189,7 +171,7 @@ class Tienda:
 
     def calcular_total(
         self,
-    ):  # Calcula el total del carrito recorriendo los productos y sumando su precio por la cantidad
+    ):
         total = 0
         for producto, cantidad in self.carrito._items:
             total += producto.get_precio() * cantidad
@@ -197,10 +179,9 @@ class Tienda:
 
     def gestionar_descuento(
         self,
-    ):  # Muestra un menu de descuentos disponibles, pide al usuario que seleccione uno y aplica el descuento al total
+    ):
         total = self.calcular_total()
 
-        # Validar que el carrito no esté vacío
         if total == 0:
             print("El carrito está vacío. No se puede aplicar descuento.")
             return
@@ -211,7 +192,6 @@ class Tienda:
 
         entrada = input("Seleccione descuento: ")
 
-        # Validar que sea un número
         if entrada.isdigit():
             opcion = int(entrada)
 

@@ -3,7 +3,7 @@ from .productos import Producto
 
 class Carrito:
     def __init__(self):
-        self._items = []  # Lista de tuplas (producto, cantidad)
+        self._items = []
 
     def agregar_producto(self, producto: Producto, cantidad: int) -> None:
         if cantidad <= 0:
@@ -15,15 +15,11 @@ class Carrito:
             print("Stock insuficiente")
             return
         else:
-            # Verificar si el producto ya existe en el carrito
-            # enumerate() devuelve pares (índice, valor) para poder modificar elementos específicos
-            # i = índice de la posición en la lista (0, 1, 2, etc.)
+
             for indice, (producto_existente, cantidad_actual) in enumerate(self._items):
                 if producto_existente == producto:
-                    # Si existe, actualizar la cantidad
-                    nueva_cantidad = (
-                        cantidad_actual + cantidad
-                    )  # cantidad_actual es la cantidad actual en el carrito y cantidad es la nueva cantidad a agregar
+
+                    nueva_cantidad = cantidad_actual + cantidad
                     self._items[indice] = (producto, nueva_cantidad)
                     stock -= cantidad
                     producto.set_stock(stock)
@@ -34,7 +30,6 @@ class Carrito:
                     print(f"Cantidad total en carrito: {nueva_cantidad}")
                     return
 
-            # Si no existe, agregarlo como nuevo item
             stock -= cantidad
             producto.set_stock(stock)
             print(f"Stock actual: {stock}")
@@ -43,9 +38,9 @@ class Carrito:
 
     def eliminar_producto(self, producto: Producto) -> None:
         for item in self._items:
-            if item[0] == producto:  # item[0] es el producto y item[1] es la cantidad
+            if item[0] == producto:
                 cantidad_en_carrito = item[1]
-                # Restaurar el stock del producto
+
                 stock_actual = producto.get_stock()
                 nuevo_stock = stock_actual + cantidad_en_carrito
                 producto.set_stock(nuevo_stock)
@@ -57,9 +52,7 @@ class Carrito:
         print("Producto no encontrado en el carrito")
 
     def mostrar_carrito(self) -> None:
-        if (
-            not self._items
-        ):  # Si no hay productos en el carrito, se imprime un mensaje y se retorna. Si la lista esta vacia python retorna false y por lo tanto se cumple la condicion
+        if not self._items:
             print("El carrito está vacío")
             return
 
@@ -73,15 +66,9 @@ class Carrito:
             )
         print(f"Total actual: ${total:.2f}")
 
-    def buscar_producto(
-        self, producto_nombre: str
-    ) -> (
-        None
-    ):  # En caso de carritos muy extensos el usuario podria necesitar buscar si ya agrego un producto y de ser asi cuanta cantidad
+    def buscar_producto(self, producto_nombre: str) -> None:
         for producto, cantidad in self._items:
-            if (
-                producto.nombre.lower() == producto_nombre.lower()
-            ):  # lower() para que no importe si el usuario escribe mayusculas o minusculas
+            if producto.nombre.lower() == producto_nombre.lower():
                 print(
                     f"El producto '{producto.nombre}' está en el carrito con {cantidad} unidad(es)."
                 )

@@ -6,7 +6,6 @@ Este paquete agrupa todas las entidades (SQLAlchemy) y sus esquemas Pydantic
 para validación y serialización.
 """
 
-# Usuarios
 from .usuarios import (
     Usuarios,
     UsuarioCreate,
@@ -15,11 +14,11 @@ from .usuarios import (
     UsuarioListResponse,
 )
 
-# Catálogo comercial
+
 from .categorias import Categorias, CategoriaCreate, CategoriaUpdate, CategoriaResponse
 from .productos import Productos, ProductoCreate, ProductoUpdate, ProductoResponse
 
-# Estandarización de datos
+
 from .roles import Roles, RolCreate, RolUpdate, RolResponse
 from .sexo import Sexo, SexoCreate, SexoUpdate, SexoResponse
 from .tipo_documento import (
@@ -29,7 +28,7 @@ from .tipo_documento import (
     TipoDocumentoResponse,
 )
 
-# Recursos de usuario
+
 from .direcciones import (
     Direcciones,
     DireccionCreate,
@@ -37,7 +36,7 @@ from .direcciones import (
     DireccionResponse,
 )
 
-# Compras
+
 from .carritos import Carritos, CarritoCreate, CarritoUpdate, CarritoResponse
 from .carrito_items import (
     Carrito_items,
@@ -47,7 +46,7 @@ from .carrito_items import (
 )
 from .descuentos import Descuentos, DescuentoCreate, DescuentoUpdate, DescuentoResponse
 
-# Pedidos
+
 from .pedidos import Pedidos, PedidoCreate, PedidoUpdate, PedidoResponse
 from .pedido_items import (
     Pedido_items,
@@ -58,13 +57,11 @@ from .pedido_items import (
 from .facturas import Facturas, FacturaCreate, FacturaUpdate, FacturaResponse
 
 __all__ = [
-    # Usuarios
     "Usuarios",
     "UsuarioCreate",
     "UsuarioUpdate",
     "UsuarioResponse",
     "UsuarioListResponse",
-    # Catálogo comercial
     "Categorias",
     "CategoriaCreate",
     "CategoriaUpdate",
@@ -73,7 +70,6 @@ __all__ = [
     "ProductoCreate",
     "ProductoUpdate",
     "ProductoResponse",
-    # Estandarización de datos
     "Roles",
     "RolCreate",
     "RolUpdate",
@@ -86,12 +82,10 @@ __all__ = [
     "TipoDocumentoCreate",
     "TipoDocumentoUpdate",
     "TipoDocumentoResponse",
-    # Recursos de usuario
     "Direcciones",
     "DireccionCreate",
     "DireccionUpdate",
     "DireccionResponse",
-    # Compras
     "Carritos",
     "CarritoCreate",
     "CarritoUpdate",
@@ -104,7 +98,6 @@ __all__ = [
     "DescuentoCreate",
     "DescuentoUpdate",
     "DescuentoResponse",
-    # Pedidos
     "Pedidos",
     "PedidoCreate",
     "PedidoUpdate",

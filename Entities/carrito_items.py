@@ -14,7 +14,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from database.database import Base
 
-# Asegurar import de func para server_default portables
+
 from sqlalchemy.sql import func
 
 
@@ -89,11 +89,10 @@ class CarritoItemResponse(CarritoItemModel):
         from_attributes = True
 
 
-# Utilidades: __repr__ y to_dict para todos los modelos ORM
 try:
     from sqlalchemy.inspection import inspect as _sa_inspect
-except Exception:  # pragma: no cover
-    _sa_inspect = None  # type: ignore
+except Exception:
+    _sa_inspect = None
 
 
 def _to_dict_default(self) -> dict[str, Any]:
@@ -120,10 +119,10 @@ def _repr_default(self) -> str:
 
 
 try:
-    Base  # type: ignore[name-defined]
+    Base
     if not hasattr(Base, "to_dict"):
-        setattr(Base, "to_dict", _to_dict_default)  # type: ignore[attr-defined]
+        setattr(Base, "to_dict", _to_dict_default)
     if not hasattr(Base, "__repr__"):
-        setattr(Base, "__repr__", _repr_default)  # type: ignore[attr-defined]
+        setattr(Base, "__repr__", _repr_default)
 except Exception:
     pass

@@ -1,7 +1,7 @@
-#Entorno virtual
+
 .venv/
 
-# Archivos de cache de Python
+
 "__pycache__/" 
 "*.pyc" 
 "*.pyo" 

@@ -1,7 +1,4 @@
-/// Archivo de configuración de VS Code para este proyecto
 {
-    //Configura el formateador de Python (Black) 
     "python.formatting.provider": "black",
-    //Activa el formateo automático al guardar 
     "editor.formatOnSave": true
 }

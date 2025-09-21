@@ -12,7 +12,6 @@ from alembic import op
 import sqlalchemy as sa
 
 
-# revision identifiers, used by Alembic.
 revision: str = "4d74a829e6cf"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
@@ -45,7 +44,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
 
-    # 2. Usuarios (depende de roles, sexo y tipo_documento)
     op.create_table(
         "usuarios",
         sa.Column("id", sa.UUID(), nullable=False),
@@ -77,7 +75,6 @@ def upgrade() -> None:
         sa.UniqueConstraint("numero_documento"),
     )
 
-    # 3. Tablas dependientes de usuarios
     op.create_table(
         "carritos",
         sa.Column("id", sa.UUID(), nullable=False),

@@ -108,11 +108,6 @@ class Usuarios(Base):
         }
 
 
-# ============================
-# Esquemas de Pydantic
-# ============================
-
-
 class UsuarioBase(BaseModel):
     """Esquema base para Usuario (datos comunes)."""
 
@@ -142,7 +137,7 @@ class UsuarioBase(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("El número de documento no puede estar vacío")
-        # Normaliza y valida caracteres básicos (alfanumérico y separadores comunes)
+
         permitidos = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789- .")
         vn = v.upper()
         if not set(vn).issubset(permitidos):
@@ -203,7 +198,6 @@ class UsuarioUpdate(BaseModel):
         return vn
 
 
-# Definiciones seguras para respuestas Pydantic si no existen
 if "UsuarioResponse" not in globals():
     from pydantic import BaseModel
 

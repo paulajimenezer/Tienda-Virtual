@@ -35,7 +35,6 @@ engine = create_engine(
     echo=DB_ECHO,
     pool_size=DB_POOL_SIZE,
     max_overflow=DB_MAX_OVERFLOW,
-    # Configuraciones específicas para SQLite
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
 )
 
