@@ -13,7 +13,6 @@ from sqlalchemy.orm import sessionmaker
 load_dotenv()
 
 # Configuración de la base de datos Neon PostgreSQL
-# Obtener la URL completa de conexión desde las variables de entorno
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
