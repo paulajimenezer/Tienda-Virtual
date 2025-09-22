@@ -7,7 +7,7 @@ Catálogo para estandarizar tipos de documento. Valida y normaliza cadenas.
 
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
-from database.database import Base
+from database.config import Base
 from sqlalchemy.sql import func
 from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship

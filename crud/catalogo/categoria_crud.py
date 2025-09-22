@@ -1,56 +1,184 @@
-"""Operaciones CRUD para Categorías.
-Basado en el patrón de Programacion-de-software/03-Introduccion-ORM/crud.
+"""
+Operaciones CRUD para Categoría
 """
 
 from typing import List, Optional
+from uuid import UUID
 from sqlalchemy.orm import Session
-from uuid import UUID  # NEW: IDs ahora son UUID
 
-from Entities.categorias import CATEGORIAS, CategoriaCreate, CategoriaUpdate
-
-
-def get_categoria(db: Session, categoria_id: UUID) -> Optional[CATEGORIAS]:
-    return db.get(CATEGORIAS, categoria_id)
+from Entities.categorias import Categorias as CATEGORIAS
 
 
-def list_categorias(db: Session, skip: int = 0, limit: int = 100) -> List[CATEGORIAS]:
-    return db.query(CATEGORIAS).offset(skip).limit(limit).all()
+class CategoriaCRUD:
+    def __init__(self, db: Session):
+        """
+        Inicializa el CRUD con una sesión de base de datos.
+        """
+        self.db = db
 
+    def crear_categoria(
+        self, nombre: str, descripcion: str = None, id_usuario_crea: UUID = None
+    ) -> CATEGORIAS:
+        """
+        Crear una nueva categoría con validaciones.
 
-def create_categoria(db: Session, data: CategoriaCreate) -> CATEGORIAS:
-    payload = (
-        data.dict(exclude_unset=True)
-        if hasattr(data, "dict")
-        else data.model_dump(exclude_unset=True)
-    )
-    obj = CATEGORIAS(**payload)
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
+        Args:
+            nombre: Nombre de la categoría (único, máximo 100 caracteres).
+            descripcion: Descripción opcional.
+            id_usuario_crea: UUID del usuario que crea la categoría.
 
+        Returns:
+            La categoría creada (instancia de CATEGORIAS).
 
-def update_categoria(
-    db: Session, categoria_id: UUID, data: CategoriaUpdate
-) -> Optional[CATEGORIAS]:
-    obj = db.get(CATEGORIAS, categoria_id)
-    if not obj:
-        return None
-    for k, v in (
-        data.dict(exclude_unset=True)
-        if hasattr(data, "dict")
-        else data.model_dump(exclude_unset=True)
-    ).items():
-        setattr(obj, k, v)
-    db.commit()
-    db.refresh(obj)
-    return obj
+        Raises:
+            ValueError: Si los datos no son válidos o no hay admin disponible.
+        """
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("El nombre de la categoría es obligatorio")
 
+        if len(nombre) > 100:
+            raise ValueError("El nombre no puede exceder 100 caracteres")
 
-def delete_categoria(db: Session, categoria_id: UUID) -> bool:
-    obj = db.query(CATEGORIAS).get(categoria_id)
-    if not obj:
+        if self.obtener_categoria_por_nombre(nombre):
+            raise ValueError("Ya existe una categoría con ese nombre")
+
+        if id_usuario_crea is None:
+            from Entities.usuarios import USUARIOS as Usuario
+
+            admin = self.db.query(Usuario).filter(Usuario.es_admin == True).first()
+            if not admin:
+                raise ValueError(
+                    "No se encontró un usuario administrador para crear la categoría"
+                )
+            id_usuario_crea = admin.id_usuario
+
+        categoria = CATEGORIAS(
+            nombre=nombre.strip(),
+            descripcion=descripcion.strip() if descripcion else None,
+            id_usuario_crea=id_usuario_crea,
+        )
+        self.db.add(categoria)
+        self.db.commit()
+        self.db.refresh(categoria)
+        return categoria
+
+    def obtener_categoria(self, categoria_id: UUID) -> Optional[CATEGORIAS]:
+        """
+        Obtener una categoría por ID.
+
+        Args:
+            categoria_id: UUID de la categoría.
+
+        Returns:
+            Categoría encontrada o None.
+        """
+        return (
+            self.db.query(CATEGORIAS)
+            .filter(CATEGORIAS.id_categoria == categoria_id)
+            .first()
+        )
+
+    def obtener_categoria_por_nombre(self, nombre: str) -> Optional[CATEGORIAS]:
+        """
+        Obtener una categoría por nombre.
+
+        Args:
+            nombre: Nombre de la categoría.
+
+        Returns:
+            Categoría encontrada o None.
+        """
+        return (
+            self.db.query(CATEGORIAS)
+            .filter(CATEGORIAS.nombre == nombre.strip())
+            .first()
+        )
+
+    def obtener_categorias(self, skip: int = 0, limit: int = 100) -> List[CATEGORIAS]:
+        """
+        Obtener lista de categorías con paginación.
+
+        Args:
+            skip: Número de registros a omitir.
+            limit: Límite de registros a retornar.
+
+        Returns:
+            Lista de categorías.
+        """
+        return self.db.query(CATEGORIAS).offset(skip).limit(limit).all()
+
+    def actualizar_categoria(
+        self, categoria_id: UUID, id_usuario_edita: UUID = None, **kwargs
+    ) -> Optional[CATEGORIAS]:
+        """
+        Actualizar una categoría con validaciones.
+
+        Args:
+            categoria_id: UUID de la categoría.
+            id_usuario_edita: UUID del usuario que edita.
+            **kwargs: Campos a actualizar (por ejemplo, nombre, descripcion).
+
+        Returns:
+            Categoría actualizada o None.
+
+        Raises:
+            ValueError: Si los datos no son válidos o no hay admin disponible.
+        """
+        categoria = self.obtener_categoria(categoria_id)
+        if not categoria:
+            return None
+
+        if "nombre" in kwargs:
+            nombre = kwargs["nombre"]
+            if not nombre or len(nombre.strip()) == 0:
+                raise ValueError("El nombre de la categoría es obligatorio")
+            if len(nombre) > 100:
+                raise ValueError("El nombre no puede exceder 100 caracteres")
+
+            existente = self.obtener_categoria_por_nombre(nombre)
+            if existente and existente.id_categoria != categoria_id:
+                raise ValueError("Ya existe una categoría con ese nombre")
+
+            kwargs["nombre"] = nombre.strip()
+
+        if "descripcion" in kwargs and kwargs["descripcion"]:
+            kwargs["descripcion"] = kwargs["descripcion"].strip()
+
+        if id_usuario_edita is None:
+            from Entities.usuarios import USUARIOS as Usuario
+
+            admin = self.db.query(Usuario).filter(Usuario.es_admin == True).first()
+            if not admin:
+                raise ValueError(
+                    "No se encontró un usuario administrador para editar la categoría"
+                )
+            id_usuario_edita = admin.id_usuario
+
+        # Registrar quién edita si existe el campo en el modelo
+        if hasattr(categoria, "id_usuario_edita"):
+            categoria.id_usuario_edita = id_usuario_edita
+
+        for key, value in kwargs.items():
+            if hasattr(categoria, key):
+                setattr(categoria, key, value)
+
+        self.db.commit()
+        self.db.refresh(categoria)
+        return categoria
+
+    def eliminar_categoria(self, categoria_id: UUID) -> bool:
+        """
+        Eliminar una categoría.
+
+        Args:
+            categoria_id: UUID de la categoría.
+
+        Returns:
+            True si se eliminó, False si no existe.
+        """
+        categoria = self.obtener_categoria(categoria_id)
+        if categoria:
+            self.db.delete(categoria)
+            self.db.commit()
+            return True
         return False
-    db.delete(obj)
-    db.commit()
-    return True
