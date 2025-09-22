@@ -1,3 +1,7 @@
+"""
+Configuración del entorno de Alembic
+"""
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -17,7 +21,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from database.database import Base
+from database.config import Base
 from Entities import *
 
 target_metadata = Base.metadata
