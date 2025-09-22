@@ -5,11 +5,12 @@
 
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.roles import ROLES, RolCreate, RolUpdate
 
 
-def get_rol(db: Session, rol_id: int) -> Optional[ROLES]:
+def get_rol(db: Session, rol_id: UUID) -> Optional[ROLES]:
     return db.get(ROLES, rol_id)
 
 
@@ -31,7 +32,7 @@ def create_rol(db: Session, data: RolCreate) -> ROLES:
     return obj
 
 
-def update_rol(db: Session, rol_id: int, data: RolUpdate) -> Optional[ROLES]:
+def update_rol(db: Session, rol_id: UUID, data: RolUpdate) -> Optional[ROLES]:
     obj = db.get(ROLES, rol_id)
     if not obj:
         return None
@@ -46,7 +47,7 @@ def update_rol(db: Session, rol_id: int, data: RolUpdate) -> Optional[ROLES]:
     return obj
 
 
-def delete_rol(db: Session, rol_id: int) -> bool:
+def delete_rol(db: Session, rol_id: UUID) -> bool:
     obj = db.get(ROLES, rol_id)
     if not obj:
         return False

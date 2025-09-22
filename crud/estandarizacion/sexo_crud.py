@@ -2,11 +2,12 @@
 
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.sexo import SEXO, SexoCreate, SexoUpdate
 
 
-def get_sexo(db: Session, sexo_id: int) -> Optional[SEXO]:
+def get_sexo(db: Session, sexo_id: UUID) -> Optional[SEXO]:
     return db.get(SEXO, sexo_id)
 
 
@@ -28,7 +29,7 @@ def create_sexo(db: Session, data: SexoCreate) -> SEXO:
     return obj
 
 
-def update_sexo(db: Session, sexo_id: int, data: SexoUpdate) -> Optional[SEXO]:
+def update_sexo(db: Session, sexo_id: UUID, data: SexoUpdate) -> Optional[SEXO]:
     obj = db.get(SEXO, sexo_id)
     if not obj:
         return None
@@ -43,7 +44,7 @@ def update_sexo(db: Session, sexo_id: int, data: SexoUpdate) -> Optional[SEXO]:
     return obj
 
 
-def delete_sexo(db: Session, sexo_id: int) -> bool:
+def delete_sexo(db: Session, sexo_id: UUID) -> bool:
     obj = db.get(SEXO, sexo_id)
     if not obj:
         return False

@@ -2,16 +2,17 @@
 
 from typing import Optional, List
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.carrito_items import CARRITO_ITEMS, CarritoItemCreate, CarritoItemUpdate
 
 
-def get_item(db: Session, item_id: int) -> Optional[CARRITO_ITEMS]:
+def get_item(db: Session, item_id: UUID) -> Optional[CARRITO_ITEMS]:
     return db.get(CARRITO_ITEMS, item_id)
 
 
 def list_items_carrito(
-    db: Session, id_carrito: int, skip: int = 0, limit: int = 100
+    db: Session, id_carrito: UUID, skip: int = 0, limit: int = 100
 ) -> List[CARRITO_ITEMS]:
     return (
         db.query(CARRITO_ITEMS)
@@ -37,7 +38,7 @@ def add_item(db: Session, data: CarritoItemCreate) -> CARRITO_ITEMS:
 
 
 def update_item(
-    db: Session, item_id: int, data: CarritoItemUpdate
+    db: Session, item_id: UUID, data: CarritoItemUpdate
 ) -> Optional[CARRITO_ITEMS]:
     obj = db.get(CARRITO_ITEMS, item_id)
     if not obj:
@@ -53,7 +54,7 @@ def update_item(
     return obj
 
 
-def remove_item(db: Session, item_id: int) -> bool:
+def remove_item(db: Session, item_id: UUID) -> bool:
     obj = db.query(CARRITO_ITEMS).get(item_id)
     if not obj:
         return False

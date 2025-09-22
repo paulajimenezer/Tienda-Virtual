@@ -4,11 +4,12 @@ Basado en el patrón de Programacion-de-software/03-Introduccion-ORM/crud.
 
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.usuarios import USUARIOS, UsuarioCreate, UsuarioUpdate
 
 
-def get_usuario(db: Session, usuario_id: int) -> Optional[USUARIOS]:
+def get_usuario(db: Session, usuario_id: UUID) -> Optional[USUARIOS]:
     return db.get(USUARIOS, usuario_id)
 
 
@@ -30,7 +31,7 @@ def create_usuario(db: Session, data: UsuarioCreate) -> USUARIOS:
 
 
 def update_usuario(
-    db: Session, usuario_id: int, data: UsuarioUpdate
+    db: Session, usuario_id: UUID, data: UsuarioUpdate
 ) -> Optional[USUARIOS]:
     obj = db.get(USUARIOS, usuario_id)
     if not obj:
@@ -46,7 +47,7 @@ def update_usuario(
     return obj
 
 
-def delete_usuario(db: Session, usuario_id: int) -> bool:
+def delete_usuario(db: Session, usuario_id: UUID) -> bool:
     obj = db.get(USUARIOS, usuario_id)
     if not obj:
         return False

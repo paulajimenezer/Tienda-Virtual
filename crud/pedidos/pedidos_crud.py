@@ -6,16 +6,17 @@
 
 from typing import Optional, List
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.pedidos import PEDIDOS, PedidoCreate, PedidoUpdate
 
 
-def get_pedido(db: Session, pedido_id: int) -> Optional[PEDIDOS]:
+def get_pedido(db: Session, pedido_id: UUID) -> Optional[PEDIDOS]:
     return db.get(PEDIDOS, pedido_id)
 
 
 def list_pedidos_usuario(
-    db: Session, id_usuario: int, skip: int = 0, limit: int = 100
+    db: Session, id_usuario: UUID, skip: int = 0, limit: int = 100
 ) -> List[PEDIDOS]:
     return (
         db.query(PEDIDOS)
@@ -40,7 +41,9 @@ def create_pedido(db: Session, data: PedidoCreate) -> PEDIDOS:
     return obj
 
 
-def update_pedido(db: Session, pedido_id: int, data: PedidoUpdate) -> Optional[PEDIDOS]:
+def update_pedido(
+    db: Session, pedido_id: UUID, data: PedidoUpdate
+) -> Optional[PEDIDOS]:
     obj = db.get(PEDIDOS, pedido_id)
     if not obj:
         return None

@@ -2,16 +2,17 @@
 
 from typing import Optional, List
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.facturas import FACTURAS, FacturaCreate, FacturaUpdate
 
 
-def get_factura(db: Session, factura_id: int) -> Optional[FACTURAS]:
+def get_factura(db: Session, factura_id: UUID) -> Optional[FACTURAS]:
     return db.get(FACTURAS, factura_id)
 
 
 def list_facturas_pedido(
-    db: Session, id_pedido: int, skip: int = 0, limit: int = 100
+    db: Session, id_pedido: UUID, skip: int = 0, limit: int = 100
 ) -> List[FACTURAS]:
     return (
         db.query(FACTURAS)
@@ -37,7 +38,7 @@ def create_factura(db: Session, data: FacturaCreate) -> FACTURAS:
 
 
 def update_factura(
-    db: Session, factura_id: int, data: FacturaUpdate
+    db: Session, factura_id: UUID, data: FacturaUpdate
 ) -> Optional[FACTURAS]:
     obj = db.get(FACTURAS, factura_id)
     if not obj:

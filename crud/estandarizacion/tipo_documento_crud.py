@@ -2,6 +2,7 @@
 
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.tipo_documento import (
     TIPO_DOCUMENTO,
@@ -10,7 +11,9 @@ from Entities.tipo_documento import (
 )
 
 
-def get_tipo_documento(db: Session, tipo_documento_id: int) -> Optional[TIPO_DOCUMENTO]:
+def get_tipo_documento(
+    db: Session, tipo_documento_id: UUID
+) -> Optional[TIPO_DOCUMENTO]:
     return db.get(TIPO_DOCUMENTO, tipo_documento_id)
 
 
@@ -35,7 +38,7 @@ def create_tipo_documento(db: Session, data: TipoDocumentoCreate) -> TIPO_DOCUME
 
 
 def update_tipo_documento(
-    db: Session, tipo_documento_id: int, data: TipoDocumentoUpdate
+    db: Session, tipo_documento_id: UUID, data: TipoDocumentoUpdate
 ) -> Optional[TIPO_DOCUMENTO]:
     obj = db.get(TIPO_DOCUMENTO, tipo_documento_id)
     if not obj:
@@ -51,7 +54,7 @@ def update_tipo_documento(
     return obj
 
 
-def delete_tipo_documento(db: Session, tipo_documento_id: int) -> bool:
+def delete_tipo_documento(db: Session, tipo_documento_id: UUID) -> bool:
     obj = db.get(TIPO_DOCUMENTO, tipo_documento_id)
     if not obj:
         return False

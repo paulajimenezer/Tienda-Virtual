@@ -2,16 +2,17 @@
 
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.direcciones import DIRECCIONES, DireccionCreate, DireccionUpdate
 
 
-def get_direccion(db: Session, direccion_id: int) -> Optional[DIRECCIONES]:
+def get_direccion(db: Session, direccion_id: UUID) -> Optional[DIRECCIONES]:
     return db.get(DIRECCIONES, direccion_id)
 
 
 def list_direcciones_usuario(
-    db: Session, id_usuario: int, skip: int = 0, limit: int = 100
+    db: Session, id_usuario: UUID, skip: int = 0, limit: int = 100
 ) -> List[DIRECCIONES]:
     return (
         db.query(DIRECCIONES)
@@ -37,7 +38,7 @@ def create_direccion(db: Session, data: DireccionCreate) -> DIRECCIONES:
 
 
 def update_direccion(
-    db: Session, direccion_id: int, data: DireccionUpdate
+    db: Session, direccion_id: UUID, data: DireccionUpdate
 ) -> Optional[DIRECCIONES]:
     obj = db.get(DIRECCIONES, direccion_id)
     if not obj:
@@ -53,7 +54,7 @@ def update_direccion(
     return obj
 
 
-def delete_direccion(db: Session, direccion_id: int) -> bool:
+def delete_direccion(db: Session, direccion_id: UUID) -> bool:
     obj = db.get(DIRECCIONES, direccion_id)
     if not obj:
         return False

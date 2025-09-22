@@ -2,11 +2,12 @@
 
 from typing import Optional, List
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from Entities.descuentos import DESCUENTOS, DescuentoCreate, DescuentoUpdate
 
 
-def get_descuento(db: Session, descuento_id: int) -> Optional[DESCUENTOS]:
+def get_descuento(db: Session, descuento_id: UUID) -> Optional[DESCUENTOS]:
     return db.get(DESCUENTOS, descuento_id)
 
 
@@ -29,7 +30,7 @@ def create_descuento(db: Session, data: DescuentoCreate) -> DESCUENTOS:
 
 
 def update_descuento(
-    db: Session, descuento_id: int, data: DescuentoUpdate
+    db: Session, descuento_id: UUID, data: DescuentoUpdate
 ) -> Optional[DESCUENTOS]:
     obj = db.get(DESCUENTOS, descuento_id)
     if not obj:
@@ -45,7 +46,7 @@ def update_descuento(
     return obj
 
 
-def delete_descuento(db: Session, descuento_id: int) -> bool:
+def delete_descuento(db: Session, descuento_id: UUID) -> bool:
     obj = db.get(DESCUENTOS, descuento_id)
     if not obj:
         return False

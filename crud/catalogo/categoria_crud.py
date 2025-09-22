@@ -4,11 +4,12 @@ Basado en el patrón de Programacion-de-software/03-Introduccion-ORM/crud.
 
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from uuid import UUID  # NEW: IDs ahora son UUID
 
 from Entities.categorias import CATEGORIAS, CategoriaCreate, CategoriaUpdate
 
 
-def get_categoria(db: Session, categoria_id: int) -> Optional[CATEGORIAS]:
+def get_categoria(db: Session, categoria_id: UUID) -> Optional[CATEGORIAS]:
     return db.get(CATEGORIAS, categoria_id)
 
 
@@ -30,7 +31,7 @@ def create_categoria(db: Session, data: CategoriaCreate) -> CATEGORIAS:
 
 
 def update_categoria(
-    db: Session, categoria_id: int, data: CategoriaUpdate
+    db: Session, categoria_id: UUID, data: CategoriaUpdate
 ) -> Optional[CATEGORIAS]:
     obj = db.get(CATEGORIAS, categoria_id)
     if not obj:
@@ -46,7 +47,7 @@ def update_categoria(
     return obj
 
 
-def delete_categoria(db: Session, categoria_id: int) -> bool:
+def delete_categoria(db: Session, categoria_id: UUID) -> bool:
     obj = db.query(CATEGORIAS).get(categoria_id)
     if not obj:
         return False

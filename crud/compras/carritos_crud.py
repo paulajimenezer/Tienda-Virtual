@@ -7,15 +7,16 @@
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
+from uuid import UUID
 
 from Entities.carritos import CARRITOS, CarritoCreate, CarritoUpdate
 
 
-def get_carrito(db: Session, carrito_id: int) -> Optional[CARRITOS]:
+def get_carrito(db: Session, carrito_id: UUID) -> Optional[CARRITOS]:
     return db.get(CARRITOS, carrito_id)
 
 
-def get_carrito_abierto_usuario(db: Session, id_usuario: int) -> Optional[CARRITOS]:
+def get_carrito_abierto_usuario(db: Session, id_usuario: UUID) -> Optional[CARRITOS]:
     return (
         db.query(CARRITOS)
         .filter(and_(CARRITOS.id_usuario == id_usuario, CARRITOS.estado == "abierto"))
@@ -24,7 +25,7 @@ def get_carrito_abierto_usuario(db: Session, id_usuario: int) -> Optional[CARRIT
 
 
 def list_carritos_usuario(
-    db: Session, id_usuario: int, skip: int = 0, limit: int = 100
+    db: Session, id_usuario: UUID, skip: int = 0, limit: int = 100
 ) -> List[CARRITOS]:
     return (
         db.query(CARRITOS)
@@ -43,7 +44,7 @@ def create_carrito(db: Session, data: CarritoCreate) -> CARRITOS:
     return obj
 
 
-def cerrar_carrito(db: Session, carrito_id: int) -> Optional[CARRITOS]:
+def cerrar_carrito(db: Session, carrito_id: UUID) -> Optional[CARRITOS]:
     obj = db.get(CARRITOS, carrito_id)
     if not obj:
         return None
@@ -54,7 +55,7 @@ def cerrar_carrito(db: Session, carrito_id: int) -> Optional[CARRITOS]:
 
 
 def update_carrito(
-    db: Session, carrito_id: int, data: CarritoUpdate
+    db: Session, carrito_id: UUID, data: CarritoUpdate
 ) -> Optional[CARRITOS]:
     obj = db.get(CARRITOS, carrito_id)
     if not obj:
