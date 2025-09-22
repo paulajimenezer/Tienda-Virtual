@@ -1,63 +1,97 @@
-"""Operaciones de catálogo para Tipo de Documento."""
+"""Operaciones de normalización y consulta para Tipo de Documento.
 
-from typing import List, Optional
-from sqlalchemy.orm import Session
+Objetivo:
+- Solo normalizar entradas a CC/TI/PP y consultar (sin crear/editar/eliminar).
+"""
+
+from typing import List, Optional, Dict
 from uuid import UUID
+from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-from Entities.tipo_documento import (
-    TIPO_DOCUMENTO,
-    TipoDocumentoCreate,
-    TipoDocumentoUpdate,
-)
+from Entities.tipo_documento import Tipo_documento as TIPO_DOCUMENTO
 
 
-def get_tipo_documento(
-    db: Session, tipo_documento_id: UUID
-) -> Optional[TIPO_DOCUMENTO]:
-    return db.get(TIPO_DOCUMENTO, tipo_documento_id)
+class TipoDocumentoCRUD:
+    """
+    Utilidades de normalización y consulta para Tipo de Documento.
+    """
 
+    TIPOS_VALIDOS = {"CC", "TI", "PP"}
 
-def list_tipos_documento(
-    db: Session, skip: int = 0, limit: int = 100
-) -> List[TIPO_DOCUMENTO]:
-    return db.query(TIPO_DOCUMENTO).offset(skip).limit(limit).all()
+    def __init__(self, db: Session):
+        self.db = db
 
+    def _normalizar_nombre(self, nombre: str) -> str:
+        return (nombre or "").strip().upper()
 
-def create_tipo_documento(db: Session, data: TipoDocumentoCreate) -> TIPO_DOCUMENTO:
-    obj = TIPO_DOCUMENTO(
-        **(
-            data.dict(exclude_unset=True)
-            if hasattr(data, "dict")
-            else data.model_dump(exclude_unset=True)
+    def normalizar_nombre_valido(self, nombre: str) -> str:
+        """
+        Normaliza y valida el nombre. Retorna nombre en UPPER si es válido.
+        Permitidos: CC, TI, PP.
+        """
+        nombre_norm = self._normalizar_nombre(nombre)
+        if nombre_norm not in self.TIPOS_VALIDOS:
+            raise ValueError("El tipo de documento debe ser 'CC', 'TI' o 'PP'")
+        return nombre_norm
+
+    def normalizar_payload(self, data: Dict) -> Dict:
+        """
+        Normaliza un payload antes de persistir:
+        - data['nombre'] -> 'CC'|'TI'|'PP'
+        """
+        if data is None:
+            return {}
+        d = dict(data)
+        if "nombre" in d and d["nombre"] is not None:
+            d["nombre"] = self.normalizar_nombre_valido(d["nombre"])
+        return d
+
+    def obtener_tipo_documento(
+        self, tipo_documento_id: UUID
+    ) -> Optional[TIPO_DOCUMENTO]:
+        return self.db.get(TIPO_DOCUMENTO, tipo_documento_id)
+
+    def obtener_tipo_documento_por_nombre(
+        self, nombre: str
+    ) -> Optional[TIPO_DOCUMENTO]:
+        nombre_norm = self._normalizar_nombre(nombre)
+        return (
+            self.db.query(TIPO_DOCUMENTO)
+            .filter(func.upper(TIPO_DOCUMENTO.nombre) == nombre_norm)
+            .first()
         )
-    )
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
 
+    def buscar_tipos_documento(
+        self, texto: str, skip: int = 0, limit: int = 100
+    ) -> List[TIPO_DOCUMENTO]:
+        term = f"%{(texto or '').strip().upper()}%"
+        return (
+            self.db.query(TIPO_DOCUMENTO)
+            .filter(func.upper(TIPO_DOCUMENTO.nombre).like(term))
+            .order_by(TIPO_DOCUMENTO.nombre.asc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
-def update_tipo_documento(
-    db: Session, tipo_documento_id: UUID, data: TipoDocumentoUpdate
-) -> Optional[TIPO_DOCUMENTO]:
-    obj = db.get(TIPO_DOCUMENTO, tipo_documento_id)
-    if not obj:
-        return None
-    for k, v in (
-        data.dict(exclude_unset=True)
-        if hasattr(data, "dict")
-        else data.model_dump(exclude_unset=True)
-    ).items():
-        setattr(obj, k, v)
-    db.commit()
-    db.refresh(obj)
-    return obj
+    def obtener_tipos_documento(
+        self, skip: int = 0, limit: int = 100
+    ) -> List[TIPO_DOCUMENTO]:
+        """
+        Lista tipos de documento con paginación.
 
+        Args:
+            skip: Número de registros a omitir.
+            limit: Cantidad máxima de registros a retornar.
 
-def delete_tipo_documento(db: Session, tipo_documento_id: UUID) -> bool:
-    obj = db.get(TIPO_DOCUMENTO, tipo_documento_id)
-    if not obj:
-        return False
-    db.delete(obj)
-    db.commit()
-    return True
+        Returns:
+            Lista de instancias de TIPO_DOCUMENTO.
+        """
+        return (
+            self.db.query(TIPO_DOCUMENTO)
+            .order_by(TIPO_DOCUMENTO.nombre.asc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
