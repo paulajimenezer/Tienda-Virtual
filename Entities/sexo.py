@@ -13,7 +13,7 @@ from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from sqlalchemy.sql import func
-from database.database import Base
+from database.config import Base
 
 
 class Sexo(Base):

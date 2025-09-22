@@ -12,7 +12,7 @@ from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
-from database.database import Base
+from database.config import Base
 
 
 from sqlalchemy.sql import func
