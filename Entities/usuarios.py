@@ -12,7 +12,7 @@ import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, text
 from sqlalchemy.sql import func
-from database.database import Base
+from database.config import Base
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
