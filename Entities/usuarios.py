@@ -52,7 +52,7 @@ class Usuarios(Base):
     id_rol = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
     activo = Column(Boolean, default=True)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -60,18 +60,28 @@ class Usuarios(Base):
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    sexo = relationship("Sexo")
-    tipo_documento = relationship("Tipo_documento", back_populates="usuarios")
-    rol = relationship("Roles", back_populates="usuarios")
+    sexo = relationship("Sexo", foreign_keys=[id_sexo])
+    tipo_documento = relationship(
+        "Tipo_documento",
+        back_populates="usuarios",
+        foreign_keys=[id_tipo_documento],
+    )
+    rol = relationship("Roles", back_populates="usuarios", foreign_keys=[id_rol])
     usuario_crea = relationship(
         "Usuarios", foreign_keys=[id_usuario_crea], remote_side=[id]
     )
     usuario_edita = relationship(
         "Usuarios", foreign_keys=[id_usuario_edita], remote_side=[id]
     )
-    direccion = relationship("Direcciones", back_populates="usuario")
-    carrito = relationship("Carritos", back_populates="usuario")
-    pedido = relationship("Pedidos", back_populates="usuario")
+    direccion = relationship(
+        "Direcciones", back_populates="usuario", foreign_keys="Direcciones.id_usuario"
+    )
+    carrito = relationship(
+        "Carritos", back_populates="usuario", foreign_keys="Carritos.id_usuario"
+    )
+    pedido = relationship(
+        "Pedidos", back_populates="usuario", foreign_keys="Pedidos.id_usuario"
+    )
 
     def __repr__(self) -> str:
         """Representación legible del objeto usuarios."""

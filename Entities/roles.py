@@ -24,7 +24,7 @@ class Roles(Base):
     nombre = Column(String(50), nullable=False)
     descripcion = Column(String(255))
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -34,7 +34,9 @@ class Roles(Base):
 
     usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
     usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
-    usuarios = relationship("Usuarios", back_populates="rol")
+    usuarios = relationship(
+        "Usuarios", back_populates="rol", foreign_keys="Usuarios.id_rol"
+    )
 
 
 class RolModel(BaseModel):

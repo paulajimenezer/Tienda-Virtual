@@ -23,7 +23,7 @@ class Categorias(Base):
     nombre = Column(String(100), nullable=False)
     descripcion = Column(String(255))
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -33,7 +33,9 @@ class Categorias(Base):
 
     usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
     usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
-    producto = relationship("Productos", back_populates="categoria")
+    producto = relationship(
+        "Productos", back_populates="categoria", foreign_keys="Productos.id_categoria"
+    )
 
 
 class CategoriaModel(BaseModel):

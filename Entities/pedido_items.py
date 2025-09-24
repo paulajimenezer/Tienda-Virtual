@@ -27,7 +27,7 @@ class Pedido_items(Base):
     cantidad = Column(Integer, nullable=False)
     precio_unitario = Column(Float, nullable=False)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -35,8 +35,12 @@ class Pedido_items(Base):
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    pedido = relationship("Pedidos", back_populates="pedido_item")
-    producto = relationship("Productos", back_populates="pedido_item")
+    pedido = relationship(
+        "Pedidos", back_populates="pedido_item", foreign_keys=[id_pedido]
+    )
+    producto = relationship(
+        "Productos", back_populates="pedido_items", foreign_keys=[id_producto]
+    )
     usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
     usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
 
