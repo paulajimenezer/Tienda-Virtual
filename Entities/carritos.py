@@ -23,7 +23,7 @@ class Carritos(Base):
     id_usuario = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"))
     activo = Column(Boolean, default=True)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -31,7 +31,9 @@ class Carritos(Base):
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario = relationship("Usuarios", back_populates="carrito")
+    usuario = relationship(
+        "Usuarios", back_populates="carrito", foreign_keys=[id_usuario]
+    )
     usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
     usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
     carrito_item = relationship("Carrito_items", back_populates="carrito")

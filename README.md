@@ -58,6 +58,20 @@ cd Tienda-Virtual
 
 # Ejecutar la aplicación
 python main.py
+```
+
+### Inicialización de BD y seeders
+No necesitas borrar la base de datos. Ejecuta el inicializador y se crearán las tablas (si no existen) y se insertarán los datos iniciales:
+
+```bash
+python -c "from database.config import init_db; init_db()"
+```
+
+Si solo quieres crear tablas sin seeders:
+```bash
+python -c "from database.config import init_db; init_db(run_seed=False)"
+```
+
 Funcionalidades del Sistema
 Menú Principal
 Ver productos disponibles - Lista todos los productos con detalles
