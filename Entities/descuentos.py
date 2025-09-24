@@ -33,7 +33,7 @@ class Descuentos(Base):
     fecha_fin = Column(DateTime, nullable=False)
     activo = Column(Boolean, default=True)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -43,7 +43,9 @@ class Descuentos(Base):
 
     usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
     usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
-    pedido = relationship("Pedidos", back_populates="descuento")
+    pedido = relationship(
+        "Pedidos", back_populates="descuento", foreign_keys="Pedidos.id_descuento"
+    )
 
 
 class DescuentoModel(BaseModel):

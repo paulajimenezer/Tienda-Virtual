@@ -30,7 +30,7 @@ class Facturas(Base):
     impuesto = Column(Float, nullable=False)
     total = Column(Float, nullable=False)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True

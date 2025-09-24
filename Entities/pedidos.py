@@ -31,7 +31,7 @@ class Pedidos(Base):
     estado = Column(String(50), nullable=False)
     total = Column(Float, nullable=False)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -39,9 +39,15 @@ class Pedidos(Base):
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    usuario = relationship("Usuarios", back_populates="pedido")
-    direccion = relationship("Direcciones", back_populates="pedido")
-    descuento = relationship("Descuentos", back_populates="pedido")
+    usuario = relationship(
+        "Usuarios", back_populates="pedido", foreign_keys=[id_usuario]
+    )
+    direccion = relationship(
+        "Direcciones", back_populates="pedido", foreign_keys=[id_direccion]
+    )
+    descuento = relationship(
+        "Descuentos", back_populates="pedido", foreign_keys=[id_descuento]
+    )
     usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
     usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
     pedido_item = relationship("Pedido_items", back_populates="pedido")

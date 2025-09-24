@@ -37,7 +37,7 @@ class Productos(Base):
     id_categoria = Column(UUID(as_uuid=True), ForeignKey("categorias.id"))
     activo = Column(Boolean, default=True)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
@@ -45,7 +45,9 @@ class Productos(Base):
     fecha_creacion = Column(DateTime, nullable=False, server_default=func.now())
     fecha_edicion = Column(DateTime, nullable=True)
 
-    categoria = relationship("Categorias", back_populates="producto")
+    categoria = relationship(
+        "Categorias", back_populates="producto", foreign_keys=[id_categoria]
+    )
     usuario_crea = relationship("Usuarios", foreign_keys=[id_usuario_crea])
     usuario_edita = relationship("Usuarios", foreign_keys=[id_usuario_edita])
     carrito_item = relationship("Carrito_items", back_populates="producto")
