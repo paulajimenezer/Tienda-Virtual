@@ -23,7 +23,7 @@ class Sexo(Base):
     codigo = Column(String(1), nullable=False, unique=True)
     nombre = Column(String(10), nullable=False)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True

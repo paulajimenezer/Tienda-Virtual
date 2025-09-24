@@ -25,7 +25,7 @@ class Carrito_items(Base):
     id_producto = Column(UUID(as_uuid=True), ForeignKey("productos.id"))
     cantidad = Column(Integer, nullable=False, default=1)
     id_usuario_crea = Column(
-        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
