@@ -8,6 +8,7 @@ validaciones de datos y verificación de referencias.
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from Entities.productos import Productos as PRODUCTOS
 from Entities.categorias import Categorias as CATEGORIAS
@@ -125,6 +126,28 @@ class ProductoCRUD:
         """
         return self.db.query(PRODUCTOS).offset(skip).limit(limit).all()
 
+    def obtener_productos_activos(
+        self, skip: int = 0, limit: int = 100
+    ) -> List[PRODUCTOS]:
+        """
+        Lista productos activos con paginación.
+
+        Args:
+            skip: Número de registros a omitir.
+            limit: Cantidad máxima de registros a retornar.
+
+        Returns:
+            Lista de instancias de PRODUCTOS activos.
+        """
+        return (
+            self.db.query(PRODUCTOS)
+            .filter(PRODUCTOS.activo == True)
+            .order_by(PRODUCTOS.nombre.asc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
     def obtener_productos_por_categoria(self, categoria_id: UUID) -> List[PRODUCTOS]:
         """
         Lista productos filtrados por categoría.
@@ -164,6 +187,24 @@ class ProductoCRUD:
             Lista de productos que contienen el texto indicado.
         """
         return self.db.query(PRODUCTOS).filter(PRODUCTOS.nombre.contains(nombre)).all()
+
+    def obtener_producto_por_nombre(self, nombre: str) -> Optional[PRODUCTOS]:
+        """
+        Obtiene un producto por nombre exacto (case-insensitive).
+
+        Args:
+            nombre: Nombre del producto a buscar.
+
+        Returns:
+            Instancia de PRODUCTOS si existe, None en caso contrario.
+        """
+        if not nombre:
+            return None
+        return (
+            self.db.query(PRODUCTOS)
+            .filter(func.lower(PRODUCTOS.nombre) == nombre.strip().lower())
+            .first()
+        )
 
     def actualizar_producto(
         self, producto_id: UUID, id_usuario_edita: UUID = None, **kwargs
