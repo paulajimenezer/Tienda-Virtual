@@ -1,38 +1,37 @@
-# Byte-compiled / optimized / DLL files
+# SO
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
+.Python
+.python-version
 
-# Virtual environment
-venv/
-.env/
+# Entornos y variables de entorno
 .venv/
+venv/
 env/
 ENV/
+# Archivos dotenv
+.env
+.env.*
 *.env
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
-
-# VS Code config
+# IDEs/editores
 .vscode/
-
-# PyCharm
 .idea/
 
-# mypy
+# Chequeo estático / tipos
 .mypy_cache/
-
-# Pyre type checker
 .pyre/
-
-# Pytype
 .pytype/
 
-# Coverage reports
+# Tests / coverage
+.pytest_cache/
 htmlcov/
 .coverage
 .coverage.*
@@ -42,19 +41,7 @@ coverage.xml
 *.cover
 *.py,cover
 
-# Pytest
-.pytest_cache/
-
-# SQLAlchemy / Alembic (migraciones)
-alembic/versions/*.pyc
-alembic/versions/__pycache__/
-alembic.ini
-
-# Logs
-*.log
-
-# Distribution / packaging
-.Python
+# Build / distribución
 build/
 develop-eggs/
 dist/
@@ -64,6 +51,19 @@ eggs/
 lib/
 lib64/
 parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Alembic / SQLAlchemy
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+alembic.ini
+
+# Logs
+*.log
 sdist/
 var/
 *.egg-info/

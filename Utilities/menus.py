@@ -8,15 +8,11 @@ from sqlalchemy.orm import Session
 from Entities.usuarios import Usuarios
 from Entities.productos import Productos
 from Entities.categorias import Categorias
-from Entities.carritos import Carritos
 from Entities.direcciones import Direcciones
 from .tienda import Tienda
 
-# CRUD y utilidades
 from crud.compras.carritos_crud import (
-    list_carritos_usuario,
     get_or_create_carrito_activo,
-    update_carrito,
     cerrar_carrito,
 )
 from crud.compras.carrito_items_crud import list_items_carrito, clear_carrito
@@ -30,6 +26,10 @@ from crud.compras.descuentos_crud import (
 from crud.pedidos.pedidos_crud import PedidoCRUD
 from crud.pedidos.pedido_items_crud import PedidoItemCRUD
 from crud.pedidos.facturas_crud import FacturaCRUD
+
+from Entities.pedidos import Pedidos
+from Entities.pedido_items import Pedido_items
+from Entities.facturas import Facturas
 
 
 def _listar_usuarios(db: Session, limit: int = 50):
@@ -49,65 +49,6 @@ def _listar_productos(db: Session, limit: int = 50):
     print("\n--- Productos (top) ---")
     for i, p in enumerate(db.query(Productos).limit(limit).all(), start=1):
         print(f"[{i}] {p.nombre} | ${float(p.precio):.2f} | stock: {int(p.stock)}")
-
-
-def _gestionar_carritos(db: Session, user: Usuarios):
-    """
-    Submenú para gestionar múltiples carritos del cliente:
-    - Ver carritos
-    - Crear nuevo carrito (desactiva el actual)
-    - Cambiar carrito activo
-    - Cerrar carrito activo
-    """
-    while True:
-        print("\n--- Carritos ---")
-        print("1) Ver mis carritos")
-        print("2) Crear nuevo carrito (y activar)")
-        print("3) Cambiar carrito activo")
-        print("4) Cerrar carrito activo")
-        print("9) Volver")
-        op = input("Seleccione: ").strip()
-        if op == "9":
-            break
-        elif op == "1":
-            carritos = list_carritos_usuario(db, user.id, limit=200)
-            if not carritos:
-                print("No tiene carritos aún.")
-                continue
-            for i, c in enumerate(carritos, start=1):
-                print(f"[{i}] {c.id} | activo: {bool(c.activo)}")
-        elif op == "2":
-            # Desactivar carritos actuales y crear uno nuevo activo
-            carritos = list_carritos_usuario(db, user.id, limit=200)
-            for c in carritos:
-                if bool(c.activo):
-                    update_carrito(db, c.id, activo=False, id_usuario_edita=user.id)
-            nuevo = get_or_create_carrito_activo(db, user.id, id_usuario_crea=user.id)
-            print(f"Nuevo carrito activo: {nuevo.id}")
-        elif op == "3":
-            carritos = list_carritos_usuario(db, user.id, limit=200)
-            if not carritos:
-                print("No tiene carritos.")
-                continue
-            for i, c in enumerate(carritos, start=1):
-                print(f"[{i}] {c.id} | activo: {bool(c.activo)}")
-            sel = input("Seleccione índice: ").strip()
-            if not sel.isdigit() or int(sel) < 1 or int(sel) > len(carritos):
-                print("Selección inválida.")
-                continue
-            elegido = carritos[int(sel) - 1]
-            # Desactivar todos y activar el elegido
-            for c in carritos:
-                update_carrito(
-                    db, c.id, activo=(c.id == elegido.id), id_usuario_edita=user.id
-                )
-            print(f"Carrito activo ahora: {elegido.id}")
-        elif op == "4":
-            activo = get_or_create_carrito_activo(db, user.id, id_usuario_crea=user.id)
-            cerrar_carrito(db, activo.id, id_usuario_edita=user.id)
-            print("Carrito activo cerrado.")
-        else:
-            print("Opción inválida")
 
 
 def _seleccionar_direccion(db: Session, user: Usuarios) -> Direcciones | None:
@@ -175,7 +116,6 @@ def _checkout(db: Session, user: Usuarios):
         print("El carrito está vacío.")
         return
 
-    # Calcular total con precios actuales
     total = 0.0
     productos = {p.id: p for p in db.query(Productos).all()}
     for it in items:
@@ -198,7 +138,6 @@ def _checkout(db: Session, user: Usuarios):
         print("Compra cancelada (sin dirección).")
         return
 
-    # Crear pedido
     pedido = PedidoCRUD(db).crear_pedido(
         id_usuario=user.id,
         id_direccion=direccion.id,
@@ -208,7 +147,6 @@ def _checkout(db: Session, user: Usuarios):
         id_usuario_crea=user.id,
     )
 
-    # Crear ítems del pedido con precios actuales
     pi_crud = PedidoItemCRUD(db)
     for it in items:
         p = productos.get(it.id_producto)
@@ -222,7 +160,6 @@ def _checkout(db: Session, user: Usuarios):
             id_usuario_crea=user.id,
         )
 
-    # Crear factura simple
     numero = f"F{pedido.id.hex[:8].upper()}"
     FacturaCRUD(db).crear_factura(
         id_pedido=pedido.id,
@@ -233,7 +170,6 @@ def _checkout(db: Session, user: Usuarios):
         id_usuario_crea=user.id,
     )
 
-    # Limpiar y cerrar carrito
     clear_carrito(db, carrito.id)
     cerrar_carrito(db, carrito.id, id_usuario_edita=user.id)
     print(f"Compra realizada. Número de factura: {numero}")
@@ -471,7 +407,7 @@ def _admin_usuarios(db: Session, admin: Usuarios):
         elif op == "1":
             _listar_usuarios(db, limit=200)
         elif op == "2":
-            # Reusa el registro simple (cliente)
+
             from .auth import register_client_prompt
 
             register_client_prompt(db)
@@ -491,11 +427,72 @@ def _admin_usuarios(db: Session, admin: Usuarios):
             if u.id == admin.id:
                 print("No puede eliminar su propia cuenta.")
                 continue
-            db.delete(u)
+            # Marcar usuario como inactivo y registrar auditoría
+            u.activo = False
+            u.id_usuario_edita = admin.id
             db.commit()
-            print("Usuario eliminado.")
+            print("Usuario marcado como inactivo correctamente.")
         else:
             print("Opción inválida")
+
+
+def _ver_facturas_usuario(db: Session, user: Usuarios):
+    """
+    Lista facturas del usuario y permite ver el detalle (ítems del pedido).
+    """
+    print("\n--- Mis facturas ---")
+    facturas = (
+        db.query(Facturas)
+        .join(Pedidos, Facturas.id_pedido == Pedidos.id)
+        .filter(Pedidos.id_usuario == user.id)
+        .order_by(Facturas.fecha_emision.desc().nullslast())
+        .all()
+    )
+    if not facturas:
+        print("No tiene facturas.")
+        return
+    pedidos = {
+        p.id: p
+        for p in db.query(Pedidos)
+        .filter(Pedidos.id.in_([f.id_pedido for f in facturas]))
+        .all()
+    }
+    for i, f in enumerate(facturas, start=1):
+        ped = pedidos.get(getattr(f, "id_pedido", None))
+        print(
+            f"[{i}] {getattr(f, 'numero_factura', '')} | "
+            f"Fecha: {getattr(f, 'fecha_emision', '')} | "
+            f"Total: ${float(getattr(f, 'total', 0.0)):.2f} | "
+            f"Estado pedido: {getattr(ped, 'estado', 'N/A')}"
+        )
+    sel = (input("Ver detalle (índice) o ENTER para volver: ") or "").strip()
+    if not sel:
+        return
+    if not sel.isdigit() or int(sel) < 1 or int(sel) > len(facturas):
+        print("Selección inválida.")
+        return
+    f = facturas[int(sel) - 1]
+    ped = pedidos.get(getattr(f, "id_pedido", None))
+    if not ped:
+        print("Pedido asociado no encontrado.")
+        return
+    items = db.query(Pedido_items).filter(Pedido_items.id_pedido == ped.id).all()
+    prods = {p.id: p for p in db.query(Productos).all()}
+    print(f"\nFactura {getattr(f, 'numero_factura', '')}")
+    print(f"Subtotal: ${float(getattr(f, 'subtotal', 0.0)):.2f}")
+    print(f"Impuesto: ${float(getattr(f, 'impuesto', 0.0)):.2f}")
+    print(f"Total:    ${float(getattr(f, 'total', 0.0)):.2f}")
+    print("\nDetalle de ítems:")
+    if not items:
+        print("Sin ítems.")
+        return
+    for it in items:
+        p = prods.get(getattr(it, "id_producto", None))
+        if not p:
+            continue
+        qty = int(getattr(it, "cantidad", 0))
+        pu = float(getattr(it, "precio_unitario", 0.0))
+        print(f" - {p.nombre}: {qty} x ${pu:.2f} = ${qty * pu:.2f}")
 
 
 def cliente_menu(db: Session, user: Usuarios):
@@ -518,9 +515,9 @@ def cliente_menu(db: Session, user: Usuarios):
         print("6. Aplicar descuento (código)")
         print("7. Buscar producto en carrito")
         print("8. Vaciar carrito")
-        print("9. Salir")
-        print("10. Gestionar carritos")
-        print("11. Comprar (checkout)")
+        print("9. Comprar (checkout)")
+        print("10. Ver mis facturas")
+        print("11. Salir")
 
         entrada = input("Seleccione una opción: ").strip()
         if not entrada.isdigit():
@@ -544,19 +541,15 @@ def cliente_menu(db: Session, user: Usuarios):
             tienda.buscar_en_carrito()
         elif opcion == 8:
             tienda.vaciar_carrito()
-        elif opcion == 10:
-            _gestionar_carritos(db, user)
-            # refrescar carrito activo para Tienda
-            tienda.carrito = get_or_create_carrito_activo(
-                db, user.id, id_usuario_crea=user.id
-            )
-        elif opcion == 11:
-            _checkout(db, user)
-            # refrescar carrito activo post-checkout
-            tienda.carrito = get_or_create_carrito_activo(
-                db, user.id, id_usuario_crea=user.id
-            )
         elif opcion == 9:
+            _checkout(db, user)
+
+            tienda.carrito = get_or_create_carrito_activo(
+                db, user.id, id_usuario_crea=user.id
+            )
+        elif opcion == 10:
+            _ver_facturas_usuario(db, user)
+        elif opcion == 11:
             print("Gracias por su compra. ¡Hasta luego!")
             break
         else:
@@ -566,39 +559,32 @@ def cliente_menu(db: Session, user: Usuarios):
 
 def admin_menu(db: Session, user: Usuarios):
     """
-    Menú de administrador: acceso a utilidades y menú de cliente.
-
-    Args:
-        db: Sesión de base de datos.
-        user: Usuario autenticado.
+    Menú de administrador: acceso a utilidades de administración.
     """
     print(f"\nBienvenido (Administrador) {user.nombre}")
     while True:
         print("\n--- Menú Admin ---")
-        print("1) Abrir menú de Tienda (como cliente)")
-        print("2) Listar usuarios")
-        print("3) Listar productos")
-        print("4) Gestionar cupones")
-        print("5) Gestionar categorías")
-        print("6) Gestionar productos")
-        print("7) Gestionar usuarios")
-        print("9) Cerrar sesión")
+        print("1) Listar usuarios")
+        print("2) Listar productos")
+        print("3) Gestionar cupones")
+        print("4) Gestionar categorías")
+        print("5) Gestionar productos")
+        print("6) Gestionar usuarios")
+        print("7) Cerrar sesión")
         opt = input("Seleccione: ").strip()
         if opt == "1":
-            cliente_menu(db, user)
-        elif opt == "2":
             _listar_usuarios(db)
-        elif opt == "3":
+        elif opt == "2":
             _listar_productos(db)
-        elif opt == "4":
+        elif opt == "3":
             _admin_cupones(db, user)
-        elif opt == "5":
+        elif opt == "4":
             _admin_categorias(db, user)
-        elif opt == "6":
+        elif opt == "5":
             _admin_productos(db, user)
-        elif opt == "7":
+        elif opt == "6":
             _admin_usuarios(db, user)
-        elif opt == "9":
+        elif opt == "7":
             print("Cerrando sesión de administrador...")
             break
         else:

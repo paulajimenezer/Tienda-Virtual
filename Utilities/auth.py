@@ -89,7 +89,6 @@ def register_client_prompt(db: Session) -> Optional[Usuarios]:
         print("Todos los campos son obligatorios.")
         return None
 
-    # Validaciones simples de unicidad
     if db.query(Usuarios).filter(Usuarios.email == email).first():
         print("El email ya está registrado.")
         return None
@@ -109,7 +108,7 @@ def register_client_prompt(db: Session) -> Optional[Usuarios]:
         nombre=nombre,
         apellido=apellido,
         email=email,
-        password=password,  # en seed/login se maneja texto plano
+        password=password,
         id_sexo=getattr(sexo, "id", None),
         id_tipo_documento=getattr(tipo_doc, "id", None),
         numero_documento=numero_documento,
