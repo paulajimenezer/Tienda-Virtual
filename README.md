@@ -1,125 +1,131 @@
-# Tienda Virtual - Sistema de Gestión de Productos y Carrito de Compras
+# Tienda Virtual
 
-##  Descripción del Proyecto
+Sistema de consola en Python para gestión de catálogo, carrito de compras, pedidos, facturación y administración. Implementa autenticación con registro de clientes, flujo de checkout con cupones y administración de catálogo y descuentos.
 
-Sistema de tienda virtual desarrollado en Python que implementa un carrito de compras con gestión de productos, categorías, stock y sistema de descuentos. El proyecto utiliza Programación Orientada a Objetos (POO) con principios de encapsulación, herencia, polimorfismo y abstracción.
+## Características
 
-## Características Principales
+- Autenticación de usuarios con roles (admin y cliente)
+- Autoregistro de clientes desde el menú principal
+- Catálogo de productos y categorías
+- Carrito de compras por usuario
+- Descuentos mediante cupones
+- Checkout con generación de pedido y factura
+- Consulta de facturas del cliente
+- Menú de administración: usuarios, productos, categorías, cupones
 
-- **Gestión de Productos**: Sistema de categorías (Electrónicos, Ropa, Comida)
-- **Carrito de Compras**: Agregar, eliminar, visualizar y vaciar carrito
-- **Control de Stock**: Validación automática de disponibilidad
-- **Sistema de Descuentos**: Descuentos porcentuales y fijos
-- **Interfaz de Consola**: Menú interactivo para usuarios
-- **Validación de Datos**: Entradas validadas para prevenir errores
+## Arquitectura
 
-## Estructura del Proyecto
-Tienda-Virtual/
-│
-├── Clases/
-│ ├── init.py
-│ ├── carrito.py # Clase Carrito y lógica de gestión
-│ ├── productos.py # Clases abstractas y concretas de productos
-│ └── tienda.py # Clase Tienda con menú principal
-│
-├── main.py # Punto de entrada de la aplicación
-└── README.md
+- Utilities: lógica de autenticación, menús y operaciones de tienda
+- Entities: modelos ORM (SQLAlchemy) para usuarios, productos, pedidos, etc.
+- crud: capa de acceso a datos por módulo (catálogo, compras, pedidos)
+- database: configuración de conexión y helpers de inicialización
+- Migrations (Alembic): migraciones de esquema (opcional)
 
-text
+Estructura relevante:
+- main.py
+- init_db.py
+- Utilities/
+  - auth.py
+  - menus.py
+  - tienda.py
+- Entities/
+- crud/
+- database/
+- Migrations/ (si se usan migraciones)
+- requirements.txt
 
-## Categorías de Productos
+## Requisitos
 
-### 1. **Productos Electrónicos**
-- Atributos: Marca, modelo, meses de garantía
-- Ejemplo: Computadores, smartphones, tablets
+- Python 3.10 o superior
+- PostgreSQL (se recomienda conexión mediante cadena en .env)
+- pip para instalación de dependencias
 
-### 2. **Productos de Ropa**
-- Atributos: Marca, material, talla, color
-- Ejemplo: Camisas, jeans, chaquetas
+## Configuración
 
-### 3. **Productos de Comida**
-- Atributos: Tipo, peso en gramos, fecha de vencimiento
-- Ejemplo: Frutas, cereales, lácteos
+1) Clonar el repositorio
+- git clone <url>
+- cd Tienda-Virtual
 
-## Instalación y Uso
+2) Entorno virtual y dependencias
+- python -m venv .venv
+- .venv\Scripts\activate (Windows) o source .venv/bin/activate (Linux/Mac)
+- pip install -r requirements.txt
 
-### Requisitos
-- Python 3.7 o superior
-- **Git** para clonar el repositorio
-- No se requieren dependencias externas
+3) Variables de entorno
+- Crear un archivo .env en la raíz con:
+  - DATABASE_URL=postgresql://usuario:password@host:puerto/basedatos?sslmode=require
 
-### Ejecución
-```bash
-# Clonar el repositorio
-git clone https://github.com/paulajimenezer/Tienda-Virtual.git
+Ejemplo:
+- DATABASE_URL=postgresql://neondb_owner:******@host/neondb?sslmode=require&channel_binding=require
 
-# Navegar al directorio
-cd Tienda-Virtual
+4) Inicialización de base de datos
+- python init_db.py
+- Crea tablas (si no existen) e inserta datos iniciales (seed).
 
-# Ejecutar la aplicación
-python main.py
-```
+Alternativa sin seeders:
+- python -c "from database.config import init_db; init_db(run_seed=False)"
 
-### Inicialización de BD y seeders
-No necesitas borrar la base de datos. Ejecuta el inicializador y se crearán las tablas (si no existen) y se insertarán los datos iniciales:
+## Ejecución
 
-```bash
-python -c "from database.config import init_db; init_db()"
-```
+- python main.py
+- Menú principal:
+  - 1) Iniciar sesión
+  - 2) Crear cuenta (cliente)
+  - 9) Salir
 
-Si solo quieres crear tablas sin seeders:
-```bash
-python -c "from database.config import init_db; init_db(run_seed=False)"
-```
+## Uso como Cliente
 
-Funcionalidades del Sistema
-Menú Principal
-Ver productos disponibles - Lista todos los productos con detalles
+Menú de cliente:
+- 1. Ver productos disponibles
+- 2. Agregar producto al carrito
+- 3. Eliminar producto del carrito
+- 4. Ver carrito
+- 5. Calcular total
+- 6. Aplicar descuento (código)
+- 7. Buscar producto en carrito
+- 8. Vaciar carrito
+- 9. Comprar (checkout)
+- 10. Ver mis facturas
+- 11. Salir
 
-Agregar producto al carrito - Selección por ID y cantidad
+Notas:
+- El checkout genera Pedido, sus ítems y una Factura con número único.
+- “Ver mis facturas” lista las facturas del usuario y permite ver su detalle.
 
-Eliminar producto del carrito - Por nombre del producto
+## Uso como Administrador
 
-Ver carrito - Muestra contenido con subtotales y total
+Menú de administración:
+- 1) Listar usuarios
+- 2) Listar productos
+- 3) Gestionar cupones
+- 4) Gestionar categorías
+- 5) Gestionar productos
+- 6) Gestionar usuarios
+- 7) Cerrar sesión
 
-Calcular total - Muestra el total actual del carrito
+## Migraciones (Alembic)
 
-Aplicar descuento - Opciones de 10% o $20 de descuento
+- El archivo alembic.ini apunta a Migrations como script_location.
+- Configurar sqlalchemy.url si se requiere ejecutar migraciones fuera del runtime.
+- Comandos típicos:
+  - alembic revision -m "mensaje"
+  - alembic upgrade head
+  - alembic downgrade -1
 
-Vaciar carrito - Elimina todos los productos
+## Datos iniciales (seed)
 
-Salir - Finaliza la aplicación
+El script init_db.py (o database.config.init_db) ejecuta seeders que:
+- Crean roles, sexos y tipos de documento
+- Insertan usuarios de ejemplo (admin y cliente)
+- Generan categorías, productos y cupones de bienvenida
+- Preparan carritos y una factura de ejemplo
 
-Principios de POO Implementados
-Abstracción: Clase base Producto con métodos abstractos
+## Consideraciones de Seguridad
 
-Encapsulación: Atributos privados con getters y setters
+- Las contraseñas actualmente se almacenan en texto plano para fines académicos.
+- Para uso real, implementar hashing (por ejemplo, bcrypt) y políticas de complejidad.
+- No versionar secretos en .env (se incluye en .gitignore).
 
-Herencia: Categorías de productos heredan de clase base
+## Licencia
 
-Polimorfismo: Métodos str personalizados por categoría
-
-Productos Predefinidos
-El sistema incluye 15 productos de ejemplo en 3 categorías:
-
-5 Electrónicos: Computadores, smartphones, tablets
-docs: Add comprehensive README.md with project documentation
-5 Ropa: Camisas, jeans, chaquetas, zapatos
-
-5 Comida: Frutas, cereales, lácteos, pasta
-
-Interactuar con el menú:
-Seleccionar opciones del 1 al 8 usando números
-Seguir las instrucciones en pantalla
-Probar todas las funcionalidades del sistema
-
-Autores
-Paula Jiménez - @paulajimenezer
-Miguel Mejía - @miguemjia
-Santiago Ospina - @santi-osp
-
-Equipo de Desarrollo - Colaboradores del proyecto
-
-Licencia
-Este proyecto está bajo la Licencia MIT.# Tienda-Virtual
-Proyecto de tienda virtual para el curso de programación de software
+Proyecto con fines académicos. Ajustar la licencia según las necesidades del equipo.
