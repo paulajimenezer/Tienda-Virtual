@@ -248,10 +248,10 @@ def _admin_cupones(db: Session, admin: Usuarios):
                 print("Selección inválida.")
                 continue
             d = dctos[int(sel) - 1]
-            if delete_descuento(db, d.id):
-                print("Cupón eliminado.")
+            if update_descuento(db, d.id, activo=False, id_usuario_edita=admin.id):
+                print("Cupón desactivado.")
             else:
-                print("No se pudo eliminar.")
+                print("No se pudo desactivar.")
         else:
             print("Opción inválida")
 
@@ -296,7 +296,16 @@ def _admin_categorias(db: Session, admin: Usuarios):
             if not sel.isdigit() or int(sel) < 1 or int(sel) > len(cats):
                 print("Selección inválida.")
                 continue
-            db.delete(cats[int(sel) - 1])
+            cat = cats[int(sel) - 1]
+
+            from Entities.productos import Productos
+            asociados = (
+                db.query(Productos).filter(Productos.id_categoria == cat.id).count()
+            )
+            if asociados > 0:
+                print("No se puede eliminar: la categoría tiene productos asociados.")
+                continue
+            db.delete(cat)
             db.commit()
             print("Categoría eliminada.")
         else:
@@ -387,9 +396,13 @@ def _admin_productos(db: Session, admin: Usuarios):
             if not sel.isdigit() or int(sel) < 1 or int(sel) > len(prods):
                 print("Selección inválida.")
                 continue
-            db.delete(prods[int(sel) - 1])
+            p = prods[int(sel) - 1]
+            if hasattr(p, "activo"):
+                p.activo = False
+            if hasattr(p, "id_usuario_edita"):
+                p.id_usuario_edita = admin.id
             db.commit()
-            print("Producto eliminado.")
+            print("Producto desactivado.")
         else:
             print("Opción inválida")
 
@@ -427,7 +440,6 @@ def _admin_usuarios(db: Session, admin: Usuarios):
             if u.id == admin.id:
                 print("No puede eliminar su propia cuenta.")
                 continue
-            # Marcar usuario como inactivo y registrar auditoría
             u.activo = False
             u.id_usuario_edita = admin.id
             db.commit()
