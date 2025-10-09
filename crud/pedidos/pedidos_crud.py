@@ -92,14 +92,12 @@ class PedidoCRUD:
         Raises:
             ValueError: Si algún dato es inválido o las referencias no existen.
         """
-        # Validaciones básicas
         if total is None or total < 0:
             raise ValueError("El total no puede ser negativo")
         estado_norm = (estado or "").strip().title()
         if estado_norm not in ESTADOS_VALIDOS:
             raise ValueError("Estado de pedido inválido")
 
-        # FKs
         usuario = self.db.get(USUARIOS, id_usuario)
         if not usuario:
             raise ValueError("El usuario especificado no existe")
@@ -107,7 +105,6 @@ class PedidoCRUD:
         direccion = self.db.get(DIRECCIONES, id_direccion)
         if not direccion:
             raise ValueError("La dirección especificada no existe")
-        # Opcional: asegurar que la dirección pertenezca al usuario
         if getattr(direccion, "id_usuario", None) != id_usuario:
             raise ValueError("La dirección no pertenece al usuario")
 

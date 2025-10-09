@@ -76,3 +76,5 @@ var/
 # Windows
 Thumbs.db
 ehthumbs.db
+
+Auth/
