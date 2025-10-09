@@ -68,7 +68,6 @@ class ProductoCRUD:
         if stock is None or stock < 0:
             raise ValueError("El stock no puede ser negativo")
 
-        # Validar FK de categoría
         categoria = (
             self.db.query(CATEGORIAS)
             .filter(CATEGORIAS.id_categoria == categoria_id)
@@ -77,7 +76,6 @@ class ProductoCRUD:
         if not categoria:
             raise ValueError("La categoría especificada no existe")
 
-        # Validar FK de usuario
         usuario = (
             self.db.query(USUARIOS).filter(USUARIOS.id_usuario == usuario_id).first()
         )
@@ -270,7 +268,6 @@ class ProductoCRUD:
                 raise ValueError("El usuario especificado no existe")
 
         if id_usuario_edita is None:
-            # Buscar admin para auditoría (fallback)
             admin = self.db.query(USUARIOS).filter(USUARIOS.es_admin == True).first()
             if not admin:
                 raise ValueError(
@@ -278,7 +275,6 @@ class ProductoCRUD:
                 )
             id_usuario_edita = admin.id_usuario
 
-        # Registrar quién edita si el modelo lo soporta
         if hasattr(obj, "id_usuario_edita"):
             obj.id_usuario_edita = id_usuario_edita
 
@@ -312,17 +308,17 @@ class ProductoCRUD:
 
     def eliminar_producto(self, producto_id: UUID) -> bool:
         """
-        Elimina un producto por su UUID.
-
-        Args:
-            producto_id: UUID del producto.
-
-        Returns:
-            True si se eliminó correctamente, False si no existe.
+        Desactiva (soft delete) un producto por su UUID.
+        Retorna True si se desactivó o ya no está activo, False si no existe.
         """
         obj = self.db.get(PRODUCTOS, producto_id)
         if not obj:
             return False
+        if hasattr(obj, "activo"):
+            obj.activo = False
+            self.db.commit()
+            self.db.refresh(obj)
+            return True
         self.db.delete(obj)
         self.db.commit()
         return True

@@ -86,7 +86,6 @@ def add_item(
     _assert_carrito_activo(db, id_carrito)
     prod = _assert_producto_activo(db, id_producto)
 
-    # Validar contra stock disponible sin reservarlo
     if hasattr(prod, "stock"):
         total_existente = (
             db.query(CARRITO_ITEMS)
@@ -125,7 +124,7 @@ def add_item(
         id_carrito=id_carrito,
         id_producto=id_producto,
         cantidad=int(cantidad),
-        id_usuario_crea=id_usuario_crea or id_carrito,  # fallback simple
+        id_usuario_crea=id_usuario_crea or id_carrito,  
     )
     db.add(obj)
     db.commit()

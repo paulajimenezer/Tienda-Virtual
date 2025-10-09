@@ -182,7 +182,6 @@ def update_descuento(
             raise ValueError("El porcentaje debe estar entre 0 y 100")
         obj.porcentaje = float(porcentaje)
 
-    # Validar coherencia de fechas si se envían
     ini = fecha_inicio if fecha_inicio is not None else obj.fecha_inicio
     fin = fecha_fin if fecha_fin is not None else obj.fecha_fin
     if ini and fin and fin <= ini:
@@ -204,10 +203,15 @@ def update_descuento(
 
 
 def delete_descuento(db: Session, descuento_id: UUID) -> bool:
-    """Elimina un descuento por su ID."""
+    """Desactiva (soft delete) un descuento por su ID."""
     obj = db.get(DESCUENTOS, descuento_id)
     if not obj:
         return False
+    if hasattr(obj, "activo"):
+        obj.activo = False
+        db.commit()
+        db.refresh(obj)
+        return True
     db.delete(obj)
     db.commit()
     return True

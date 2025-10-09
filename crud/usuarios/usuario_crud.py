@@ -452,17 +452,17 @@ class UsuarioCRUD:
 
     def eliminar_usuario(self, usuario_id: UUID) -> bool:
         """
-        Elimina un usuario por su ID.
-
-        Args:
-            usuario_id: UUID del usuario.
-
-        Returns:
-            True si se eliminó correctamente, False si no existe.
+        Desactiva (soft delete) un usuario por su ID si el modelo soporta 'activo'.
+        Si no soporta 'activo', realiza borrado físico.
         """
         usuario = self.obtener_usuario(usuario_id)
         if not usuario:
             return False
+        if hasattr(usuario, "activo"):
+            usuario.activo = False
+            self.db.commit()
+            self.db.refresh(usuario)
+            return True
         self.db.delete(usuario)
         self.db.commit()
         return True
