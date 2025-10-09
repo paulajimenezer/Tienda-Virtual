@@ -154,7 +154,6 @@ class CategoriaCRUD:
                 )
             id_usuario_edita = admin.id_usuario
 
-        # Registrar quién edita si existe el campo en el modelo
         if hasattr(categoria, "id_usuario_edita"):
             categoria.id_usuario_edita = id_usuario_edita
 
@@ -169,16 +168,22 @@ class CategoriaCRUD:
     def eliminar_categoria(self, categoria_id: UUID) -> bool:
         """
         Eliminar una categoría.
-
-        Args:
-            categoria_id: UUID de la categoría.
-
-        Returns:
-            True si se eliminó, False si no existe.
+        Si existen productos asociados, no se elimina (para evitar errores por FK).
         """
         categoria = self.obtener_categoria(categoria_id)
-        if categoria:
-            self.db.delete(categoria)
-            self.db.commit()
-            return True
-        return False
+        if not categoria:
+            return False
+        from Entities.productos import Productos as PRODUCTOS
+
+        asociados = (
+            self.db.query(PRODUCTOS)
+            .filter(PRODUCTOS.id_categoria == categoria.id)
+            .count()
+        )
+        if asociados > 0:
+            raise ValueError(
+                "No se puede eliminar: la categoría tiene productos asociados"
+            )
+        self.db.delete(categoria)
+        self.db.commit()
+        return True
