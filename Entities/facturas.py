@@ -14,9 +14,8 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from database.config import Base
-
-
 from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
 
 
 class Facturas(Base):
@@ -46,7 +45,7 @@ class Facturas(Base):
 class FacturaModel(BaseModel):
     """Esquema Pydantic para facturas."""
 
-    id_pedido: Optional[int] = Field(None, ge=1)
+    id_pedido: Optional[UUID_t] = Field(None)
     numero: Optional[str] = Field(None, min_length=3, max_length=40)
     fecha_emision: Optional[datetime] = None
     total: Optional[float] = Field(None, ge=0)
@@ -76,7 +75,7 @@ class FacturaModel(BaseModel):
 class FacturaCreate(FacturaModel):
     """Esquema para crear factura."""
 
-    id_pedido: int = Field(..., ge=1)
+    id_pedido: UUID_t = Field(...)
     numero: str = Field(..., min_length=3, max_length=40)
     total: float = Field(..., ge=0)
 
@@ -100,7 +99,7 @@ class FacturaUpdate(BaseModel):
 class FacturaResponse(FacturaModel):
     """Esquema de respuesta para factura."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

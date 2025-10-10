@@ -14,6 +14,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from sqlalchemy.sql import func
 from database.config import Base
+from uuid import UUID as UUID_t
 
 
 class Sexo(Base):
@@ -90,7 +91,7 @@ class SexoUpdate(BaseModel):
 class SexoResponse(SexoModel):
     """Esquema de respuesta para sexo/género."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

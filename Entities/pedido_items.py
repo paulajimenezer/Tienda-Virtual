@@ -16,6 +16,7 @@ from database.config import Base
 
 
 from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
 
 
 class Pedido_items(Base):
@@ -48,8 +49,8 @@ class Pedido_items(Base):
 class PedidoItemModel(BaseModel):
     """Esquema Pydantic para items de pedido."""
 
-    id_pedido: Optional[int] = Field(None, ge=1)
-    id_producto: Optional[int] = Field(None, ge=1)
+    id_pedido: Optional[UUID_t] = Field(None)
+    id_producto: Optional[UUID_t] = Field(None)
     cantidad: Optional[int] = Field(None, ge=1)
     precio_unitario: Optional[float] = Field(None, ge=0)
     descuento: Optional[float] = Field(None, ge=0)
@@ -70,8 +71,8 @@ class PedidoItemModel(BaseModel):
 class PedidoItemCreate(PedidoItemModel):
     """Esquema para crear item de pedido."""
 
-    id_pedido: int = Field(..., ge=1)
-    id_producto: int = Field(..., ge=1)
+    id_pedido: UUID_t = Field(...)
+    id_producto: UUID_t = Field(...)
     cantidad: int = Field(..., ge=1)
     precio_unitario: float = Field(..., ge=0)
     descuento: Optional[float] = Field(None, ge=0)
@@ -88,7 +89,7 @@ class PedidoItemUpdate(BaseModel):
 class PedidoItemResponse(PedidoItemModel):
     """Esquema de respuesta para item de pedido."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

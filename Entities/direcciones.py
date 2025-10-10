@@ -14,6 +14,7 @@ from database.config import Base
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
+from uuid import UUID as UUID_t
 
 
 class Direcciones(Base):
@@ -48,7 +49,7 @@ class Direcciones(Base):
 class DireccionModel(BaseModel):
     """Esquema Pydantic para direcciones de usuarios."""
 
-    id_usuario: Optional[int] = Field(None, ge=1)
+    id_usuario: Optional[UUID_t] = Field(None)
     linea1: Optional[str] = Field(
         None, min_length=3, max_length=120, description="Calle y número"
     )
@@ -84,7 +85,7 @@ class DireccionModel(BaseModel):
 class DireccionCreate(DireccionModel):
     """Esquema para crear dirección."""
 
-    id_usuario: int = Field(..., ge=1)
+    id_usuario: UUID_t = Field(...)
     linea1: str = Field(..., min_length=3, max_length=120)
     ciudad: str = Field(..., min_length=2, max_length=80)
     pais: str = Field(..., min_length=2, max_length=80)
@@ -114,7 +115,7 @@ class DireccionUpdate(BaseModel):
 class DireccionResponse(DireccionModel):
     """Esquema de respuesta de dirección."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

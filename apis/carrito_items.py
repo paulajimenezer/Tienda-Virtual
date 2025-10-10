@@ -9,19 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.config import get_db
-from crud.compras.carrito_items_crud import (
-    get_item,
-    list_items_carrito,
-    add_item,
-    update_item_cantidad,
-    remove_item,
-    clear_carrito,
-)
-from schemas import (
+from schemas import RespuestaAPI
+from Entities.carrito_items import (
     CarritoItemCreate,
-    CarritoItemUpdate,
     CarritoItemResponse,
-    RespuestaAPI,
+    CarritoItemUpdate,
 )
 
 router = APIRouter(prefix="/carrito-items", tags=["carrito_items"])
@@ -72,12 +64,9 @@ async def crear_item(item_data: CarritoItemCreate, db: Session = Depends(get_db)
         carrito_items_crud = CarritoItemsCRUD(db)
 
         item = carrito_items_crud.crear_item(
-            nombre=item_data.nombre,
-            descripcion=item_data.descripcion,
-            precio=item_data.precio,
-            stock=item_data.stock,
-            categoria_id=item_data.categoria_id,
-            usuario_id=item_data.usuario_id,
+            id_carrito=item_data.id_carrito,
+            id_producto=item_data.id_producto,
+            cantidad=item_data.cantidad,
         )
         return item
     except ValueError as e:
@@ -96,8 +85,9 @@ async def actualizar_item(
     try:
         if carrito_item_data.cantidad is None:
             raise HTTPException(status_code=400, detail="Digite una cantidad válida")
-        obj = update_item_cantidad(
-            db,
+
+        carrito_items_crud = CarritoItemsCRUD(db)
+        obj = carrito_items_crud.actualizar_item_cantidad(
             item_id,
             cantidad=carrito_item_data.cantidad,
             id_usuario_edita=getattr(carrito_item_data, "id_usuario_edita", None),

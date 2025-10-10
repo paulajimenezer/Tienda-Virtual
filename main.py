@@ -1,53 +1,99 @@
 """
-Punto de entrada de la aplicación Tienda Virtual.
-
-Este módulo inicia la aplicación de consola, gestiona el login de usuarios y
-despliega los menús correspondientes según el rol (admin o cliente).
+Sistema de gestión de productos con ORM SQLAlchemy y Neon PostgreSQL
+API REST con FastAPI - Sin interfaz de consola
 """
 
-import sys
-from database.config import check_connection, SessionLocal
-from Utilities.auth import login_prompt, register_client_prompt
-from Utilities.menus import admin_menu, cliente_menu
+import uvicorn
+from apis import (
+    auth,
+    usuarios,
+    categorias,
+    productos,
+    pedidos,
+    pedido_items,
+    facturas,
+    descuentos,
+    carritos,
+    carrito_items,
+)
+from database.config import create_tables
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# Crear la aplicación FastAPI
+app = FastAPI(
+    title="Sistema de Gestión de Productos",
+    description="API REST para gestión de usuarios, categorías y productos con autenticación",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+# Configurar CORS para permitir peticiones desde el frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción, especificar dominios específicos
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Incluir los routers de las APIs
+app.include_router(auth.router)
+app.include_router(usuarios.router)
+app.include_router(categorias.router)
+app.include_router(productos.router)
+app.include_router(pedidos.router)
+app.include_router(pedido_items.router)
+app.include_router(facturas.router)
+app.include_router(descuentos.router)
+app.include_router(carritos.router)
+app.include_router(carrito_items.router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Evento de inicio de la aplicación"""
+    print("Iniciando Sistema de Gestión de Productos...")
+    print("Configurando base de datos...")
+    create_tables()
+    print("Sistema listo para usar.")
+    print("Documentación disponible en: http://localhost:8000/docs")
+
+
+@app.get("/", tags=["raíz"])
+async def root():
+    """Endpoint raíz que devuelve información básica de la API."""
+    return {
+        "mensaje": "Bienvenido al Sistema de Gestión de Productos",
+        "version": "1.0.0",
+        "documentacion": "/docs",
+        "redoc": "/redoc",
+        "endpoints": {
+            "autenticacion": "/auth",
+            "usuarios": "/usuarios",
+            "categorias": "/categorias",
+            "productos": "/productos",
+            "pedidos": "/pedidos",
+            "pedido_items": "/pedido-items",
+            "facturas": "/facturas",
+            "descuentos": "/descuentos",
+            "carritos": "/carritos",
+            "carrito_items": "/carrito-items",
+        },
+    }
 
 
 def main():
-    """
-    Ejecuta el flujo principal de la aplicación:
-    - Verifica la conexión a la base de datos.
-    - Solicita login de usuario o registro de cuenta de cliente.
-    - Redirige al menú de administrador o cliente según el rol.
-    """
-    if not check_connection():
-        print("Error de conexión a la base de datos")
-        sys.exit(1)
-
-    print("\n=== Tienda Virtual ===")
-    while True:
-        with SessionLocal() as db:
-            print("\n1) Iniciar sesión")
-            print("2) Crear cuenta (cliente)")
-            print("9) Salir")
-            opt = input("Seleccione: ").strip()
-            if opt == "9":
-                print("Saliendo...")
-                break
-            if opt == "2":
-                register_client_prompt(db)
-                continue
-            if opt != "1":
-                print("Opción inválida")
-                continue
-
-            user, is_admin = login_prompt(db)
-            if not user:
-                print("No autenticado.")
-                continue
-
-            if is_admin:
-                admin_menu(db, user)
-            else:
-                cliente_menu(db, user)
+    """Función principal para ejecutar el servidor"""
+    print("Iniciando servidor FastAPI...")
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,  # Recargar automáticamente en desarrollo
+        log_level="info",
+    )
 
 
 if __name__ == "__main__":
