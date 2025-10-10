@@ -6,10 +6,12 @@ Objetivo:
   M -> Masculino, F -> Femenino, O -> Otro.
 """
 
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from Entities.sexo import Sexo as SEXO
 
 
@@ -81,4 +83,3 @@ class SexoCRUD:
             .limit(limit)
             .all()
         )
-        

@@ -7,13 +7,14 @@ con validaciones de entrada y verificación de entidades normalizadoras (Roles, 
 
 from typing import List, Optional
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from auth.security import PasswordManager
-from Entities.usuarios import Usuarios as USUARIOS
 from Entities.roles import Roles
 from Entities.sexo import Sexo
 from Entities.tipo_documento import Tipo_documento
+from Entities.usuarios import Usuarios as USUARIOS
 
 
 class UsuarioCRUD:

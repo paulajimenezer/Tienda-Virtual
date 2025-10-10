@@ -4,10 +4,11 @@ Objetivo:
 - Solo normalizar entradas a CC/TI/PP y consultar (sin crear/editar/eliminar).
 """
 
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from Entities.tipo_documento import Tipo_documento as TIPO_DOCUMENTO
 

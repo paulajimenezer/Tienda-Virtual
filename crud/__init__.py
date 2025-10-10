@@ -4,10 +4,10 @@ Paquete CRUD para Tienda-Virtual.
 """
 
 from .catalogo import categoria_crud, producto_crud
+from .compras import carrito_items_crud, carritos_crud, descuentos_crud
 from .estandarizacion import roles_crud, sexo_crud, tipo_documento_crud
-from .usuarios import usuario_crud, direcciones_crud
-from .compras import carritos_crud, carrito_items_crud, descuentos_crud
-from .pedidos import pedidos_crud, pedido_items_crud, facturas_crud
+from .pedidos import facturas_crud, pedido_items_crud, pedidos_crud
+from .usuarios import direcciones_crud, usuario_crud
 
 __all__ = [
     "categoria_crud",

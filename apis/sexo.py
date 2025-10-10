@@ -5,11 +5,12 @@ API de Sexo - Endpoints para gestión de sexo
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.estandarizacion.sexo_crud import SexoCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import SexoCreate, SexoResponse, SexoUpdate, RespuestaAPI
-from sqlalchemy.orm import Session
+from schemas import RespuestaAPI, SexoCreate, SexoResponse, SexoUpdate
 
 router = APIRouter(prefix="/sexo", tags=["sexo"])
 

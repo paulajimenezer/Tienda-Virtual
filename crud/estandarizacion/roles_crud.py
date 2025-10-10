@@ -7,10 +7,12 @@ Objetivo:
   admin=False -> "Cliente"
 """
 
-from typing import List, Optional, Union, Dict
+from typing import Dict, List, Optional, Union
 from uuid import UUID
-from sqlalchemy.orm import Session
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from Entities.roles import Roles as ROLES
 
 

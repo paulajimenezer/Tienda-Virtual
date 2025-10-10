@@ -4,11 +4,12 @@ API de Autenticación - Endpoints para login y autenticación
 
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.usuarios.usuario_crud import UsuarioCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
 from schemas import RespuestaAPI, UsuarioLogin, UsuarioResponse
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/auth", tags=["autenticación"])
 
@@ -48,9 +49,9 @@ async def crear_usuario_admin(db: Session = Depends(get_db)):
             )
 
         # Buscar rol 'Admin' y un tipo de documento disponible
+        from auth.security import PasswordManager
         from Entities.roles import Roles
         from Entities.tipo_documento import Tipo_documento
-        from auth.security import PasswordManager
 
         rol_admin = db.query(Roles).filter(Roles.nombre.ilike("admin")).first()
         if not rol_admin:

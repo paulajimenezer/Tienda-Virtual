@@ -12,13 +12,15 @@ Permite:
 Los códigos son strings de hasta 50 caracteres, aplicables al finalizar la compra.
 """
 
-from typing import Optional, List
-from uuid import UUID
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from Entities.descuentos import Descuentos as DESCUENTOS
 from datetime import datetime  # asegurado
+from typing import List, Optional
+from uuid import UUID
+
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 from sqlalchemy.orm import Session as SASession
+
+from Entities.descuentos import Descuentos as DESCUENTOS
 
 
 class DescuentoCRUD:
