@@ -9,14 +9,16 @@ al esquema de la entidad USUARIOS de este proyecto.
 """
 
 import uuid
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, text
-from sqlalchemy.sql import func
-from database.config import Base
-from sqlalchemy.orm import relationship
-from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
+from pydantic import BaseModel, EmailStr, Field, validator
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from database.config import Base
 
 
 class Usuarios(Base):
@@ -220,6 +222,7 @@ if "UsuarioResponse" not in globals():
 
 if "UsuarioListResponse" not in globals():
     from typing import List
+
     from pydantic import BaseModel
 
     class UsuarioListResponse(BaseModel):

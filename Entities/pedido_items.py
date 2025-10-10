@@ -7,16 +7,16 @@ serialización.
 """
 
 import uuid
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from typing import Any, Optional
-from pydantic import BaseModel, Field, validator
-from database.config import Base
-
-
-from sqlalchemy.sql import func
 from uuid import UUID as UUID_t
+
+from pydantic import BaseModel, Field, validator
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from database.config import Base
 
 
 class Pedido_items(Base):
