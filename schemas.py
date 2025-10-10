@@ -11,28 +11,35 @@ from pydantic import BaseModel, EmailStr
 
 class UsuarioBase(BaseModel):
     nombre: str
-    nombre_usuario: str
+    apellido: str
     email: EmailStr
-    telefono: Optional[str] = None
-    es_admin: bool = False
+    numero_documento: str
+    id_rol: UUID
+    id_tipo_documento: UUID
+    id_sexo: Optional[UUID] = None
+    activo: bool = True
 
 
 class UsuarioCreate(UsuarioBase):
-    contraseña: str
+    password: str
+    # id_usuario_crea es opcional si el modelo lo soporta
+    id_usuario_crea: Optional[UUID] = None
 
 
 class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = None
-    nombre_usuario: Optional[str] = None
+    apellido: Optional[str] = None
     email: Optional[EmailStr] = None
-    telefono: Optional[str] = None
-    es_admin: Optional[bool] = None
+    password: Optional[str] = None
+    numero_documento: Optional[str] = None
+    id_rol: Optional[UUID] = None
+    id_tipo_documento: Optional[UUID] = None
+    id_sexo: Optional[UUID] = None
     activo: Optional[bool] = None
 
 
 class UsuarioResponse(UsuarioBase):
     id: UUID
-    activo: bool
     fecha_creacion: datetime
     fecha_edicion: Optional[datetime] = None
 
@@ -41,8 +48,8 @@ class UsuarioResponse(UsuarioBase):
 
 
 class UsuarioLogin(BaseModel):
-    nombre_usuario: str
-    contraseña: str
+    email: EmailStr
+    password: str
 
 
 class CambioContraseña(BaseModel):
@@ -70,7 +77,7 @@ class CategoriaUpdate(BaseModel):
 
 
 class CategoriaResponse(CategoriaBase):
-    id_categoria: UUID
+    id: UUID
     fecha_creacion: datetime
     fecha_edicion: Optional[datetime] = None
 
@@ -100,8 +107,14 @@ class ProductoUpdate(BaseModel):
     usuario_id: Optional[UUID] = None
 
 
-class ProductoResponse(ProductoBase):
-    id_producto: UUID
+class ProductoResponse(BaseModel):
+    id: UUID
+    nombre: str
+    descripcion: Optional[str] = None
+    precio: float
+    stock: int
+    id_categoria: UUID
+    activo: bool = True
     fecha_creacion: datetime
     fecha_edicion: Optional[datetime] = None
 
@@ -132,3 +145,14 @@ class RespuestaError(BaseModel):
     exito: bool = False
     error: str
     codigo: int
+
+
+class CarritoResponse(BaseModel):
+    id: UUID
+    id_usuario: UUID
+    activo: bool
+    fecha_creacion: datetime
+    fecha_edicion: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

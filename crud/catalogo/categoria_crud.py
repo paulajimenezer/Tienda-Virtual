@@ -42,16 +42,6 @@ class CategoriaCRUD:
         if self.obtener_categoria_por_nombre(nombre):
             raise ValueError("Ya existe una categoría con ese nombre")
 
-        if id_usuario_crea is None:
-            from Entities.usuarios import USUARIOS as Usuario
-
-            admin = self.db.query(Usuario).filter(Usuario.es_admin == True).first()
-            if not admin:
-                raise ValueError(
-                    "No se encontró un usuario administrador para crear la categoría"
-                )
-            id_usuario_crea = admin.id_usuario
-
         categoria = CATEGORIAS(
             nombre=nombre.strip(),
             descripcion=descripcion.strip() if descripcion else None,
@@ -72,11 +62,7 @@ class CategoriaCRUD:
         Returns:
             Categoría encontrada o None.
         """
-        return (
-            self.db.query(CATEGORIAS)
-            .filter(CATEGORIAS.id_categoria == categoria_id)
-            .first()
-        )
+        return self.db.get(CATEGORIAS, categoria_id)
 
     def obtener_categoria_por_nombre(self, nombre: str) -> Optional[CATEGORIAS]:
         """
@@ -144,17 +130,7 @@ class CategoriaCRUD:
         if "descripcion" in kwargs and kwargs["descripcion"]:
             kwargs["descripcion"] = kwargs["descripcion"].strip()
 
-        if id_usuario_edita is None:
-            from Entities.usuarios import USUARIOS as Usuario
-
-            admin = self.db.query(Usuario).filter(Usuario.es_admin == True).first()
-            if not admin:
-                raise ValueError(
-                    "No se encontró un usuario administrador para editar la categoría"
-                )
-            id_usuario_edita = admin.id_usuario
-
-        if hasattr(categoria, "id_usuario_edita"):
+        if id_usuario_edita is not None and hasattr(categoria, "id_usuario_edita"):
             categoria.id_usuario_edita = id_usuario_edita
 
         for key, value in kwargs.items():

@@ -5,13 +5,15 @@ Incluye creación, consulta, actualización, eliminación, autenticación y gest
 con validaciones de entrada y verificación de entidades normalizadoras (Roles, Sexo, Tipo_documento).
 """
 
-import re
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
 
 from auth.security import PasswordManager
 from Entities.usuarios import Usuarios as USUARIOS
+from Entities.roles import Roles
+from Entities.sexo import Sexo
+from Entities.tipo_documento import Tipo_documento
 
 
 class UsuarioCRUD:
@@ -38,36 +40,10 @@ class UsuarioCRUD:
         Returns:
             True si el formato es válido, False en caso contrario.
         """
+        import re
+
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return re.match(pattern, email or "") is not None
-
-    def _validar_telefono(self, telefono: str) -> bool:
-        """
-        Valida el formato internacional de un teléfono.
-
-        Args:
-            telefono: Teléfono a validar.
-
-        Returns:
-            True si el formato es válido, False en caso contrario.
-        """
-        pattern = r"^\+?[\d\s\-\(\)]{7,15}$"
-        return re.match(pattern, telefono or "") is not None
-
-    def _validar_nombre_usuario(self, nombre_usuario: str) -> bool:
-        """
-        Valida el formato de nombre de usuario.
-
-        Reglas: 3-20 caracteres, alfanumérico y guion bajo.
-
-        Args:
-            nombre_usuario: Nombre de usuario a validar.
-
-        Returns:
-            True si el formato es válido, False en caso contrario.
-        """
-        pattern = r"^[a-zA-Z0-9_]{3,20}$"
-        return re.match(pattern, nombre_usuario or "") is not None
 
     def _validar_numero_documento(self, numero: str) -> bool:
         """
@@ -82,47 +58,31 @@ class UsuarioCRUD:
         numero = (numero or "").strip()
         return numero.isdigit() and len(numero) in (7, 10)
 
-    def _get_pk(self, obj) -> Optional[UUID]:
-        """
-        Obtiene el valor de la clave primaria de un objeto.
-
-        Devuelve el primer atributo encontrado entre 'id' o 'id_usuario'.
-
-        Args:
-            obj: Instancia del modelo.
-
-        Returns:
-            UUID de la clave primaria o None si no se encuentra.
-        """
-        return getattr(obj, "id", None) or getattr(obj, "id_usuario", None)
-
     def crear_usuario(
         self,
         nombre: str,
-        nombre_usuario: str,
+        apellido: str,
         email: str,
-        contraseña: str,
+        password: str,
         numero_documento: str,
-        telefono: Optional[str] = None,
-        es_admin: bool = False,
-        rol_id: UUID = None,
-        sexo_id: Optional[UUID] = None,
-        tipo_documento_id: UUID = None,
+        id_rol: UUID,
+        id_tipo_documento: UUID,
+        id_sexo: Optional[UUID] = None,
+        id_usuario_crea: Optional[UUID] = None,
     ) -> USUARIOS:
         """
         Crea un nuevo usuario con validaciones y normalización.
 
         Args:
             nombre: Nombre del usuario (máximo 100 caracteres).
-            nombre_usuario: Identificador único (3-20 caracteres, alfanumérico y guion bajo).
+            apellido: Apellido del usuario (máximo 100 caracteres).
             email: Correo electrónico válido y único.
-            contraseña: Contraseña en texto plano que será hasheada.
+            password: Contraseña en texto plano que será hasheada.
             numero_documento: Número del documento.
-            telefono: Teléfono opcional en formato internacional.
-            es_admin: Indica si el usuario es administrador.
-            rol_id: UUID de la entidad Roles (obligatorio).
-            sexo_id: UUID de la entidad Sexo (opcional).
-            tipo_documento_id: UUID de la entidad Tipo_documento (obligatorio).
+            id_rol: UUID del rol asignado al usuario.
+            id_tipo_documento: UUID del tipo de documento.
+            id_sexo: UUID del sexo del usuario (opcional).
+            id_usuario_crea: UUID del usuario que crea este registro (opcional).
 
         Returns:
             Instancia creada de USUARIOS.
@@ -130,91 +90,51 @@ class UsuarioCRUD:
         Raises:
             ValueError: Si los datos son inválidos o si los FKs no existen.
         """
-        if not nombre or len(nombre.strip()) == 0:
+        if not nombre or not nombre.strip():
             raise ValueError("El nombre es obligatorio")
-        if len(nombre) > 100:
-            raise ValueError("El nombre no puede exceder 100 caracteres")
-
-        if not nombre_usuario or not self._validar_nombre_usuario(nombre_usuario):
-            raise ValueError(
-                "El nombre de usuario debe tener entre 3-20 caracteres y solo contener letras, números y guiones bajos"
-            )
-        if self.obtener_usuario_por_nombre_usuario(nombre_usuario):
-            raise ValueError("El nombre de usuario ya está registrado")
-
+        if not apellido or not apellido.strip():
+            raise ValueError("El apellido es obligatorio")
         if not email or not self._validar_email(email):
             raise ValueError("Email inválido")
-        if self.obtener_usuario_por_email(email):
-            raise ValueError("El email ya está registrado")
-
-        if not contraseña:
+        if not password:
             raise ValueError("La contraseña es obligatoria")
-        es_valida, mensaje = PasswordManager.validate_password_strength(contraseña)
+        es_valida, mensaje = PasswordManager.validate_password_strength(password)
         if not es_valida:
             raise ValueError(f"Contraseña inválida: {mensaje}")
-
         if not numero_documento or not self._validar_numero_documento(numero_documento):
             raise ValueError("Número de documento inválido")
-        numero_documento = numero_documento.strip()
 
-        if telefono:
-            if not self._validar_telefono(telefono):
-                raise ValueError("Formato de teléfono inválido")
-            telefono = telefono.strip()
+        # Unicidad
+        if self.obtener_usuario_por_email(email):
+            raise ValueError("El email ya está registrado")
+        existente_doc = (
+            self.db.query(USUARIOS)
+            .filter(USUARIOS.numero_documento == numero_documento.strip())
+            .first()
+        )
+        if existente_doc:
+            raise ValueError("El número de documento ya está registrado")
 
-        if rol_id is None:
-            raise ValueError("El rol es obligatorio")
-        from Entities.roles import Roles
-
-        if self.db.get(Roles, rol_id) is None:
+        # FKs
+        if self.db.get(Roles, id_rol) is None:
             raise ValueError("El rol especificado no existe")
-
-        if sexo_id is not None:
-            from Entities.sexo import Sexo
-
-            if self.db.get(Sexo, sexo_id) is None:
-                raise ValueError("El sexo especificado no existe")
-
-        if tipo_documento_id is None:
-            raise ValueError("El tipo de documento es obligatorio")
-        from Entities.tipo_documento import Tipo_documento
-
-        if self.db.get(Tipo_documento, tipo_documento_id) is None:
+        if self.db.get(Tipo_documento, id_tipo_documento) is None:
             raise ValueError("El tipo de documento especificado no existe")
-
-        if hasattr(USUARIOS, "numero_documento"):
-            existente_doc = (
-                self.db.query(USUARIOS)
-                .filter(
-                    USUARIOS.numero_documento == numero_documento,
-                )
-                .first()
-            )
-            if existente_doc:
-                raise ValueError("El número de documento ya está registrado")
-
-        contraseña_hash = PasswordManager.hash_password(contraseña)
+        if id_sexo is not None and self.db.get(Sexo, id_sexo) is None:
+            raise ValueError("El sexo especificado no existe")
 
         usuario = USUARIOS(
             nombre=nombre.strip(),
-            nombre_usuario=nombre_usuario.strip().lower(),
+            apellido=apellido.strip(),
             email=email.lower().strip(),
-            contraseña_hash=contraseña_hash,
-            telefono=telefono,
-            es_admin=es_admin,
-            **(
-                {"numero_documento": numero_documento}
-                if hasattr(USUARIOS, "numero_documento")
-                else {}
-            ),
+            password=PasswordManager.hash_password(password),
+            numero_documento=numero_documento.strip(),
+            id_rol=id_rol,
+            id_tipo_documento=id_tipo_documento,
+            id_sexo=id_sexo,
         )
-
-        if hasattr(usuario, "rol_id"):
-            usuario.rol_id = rol_id
-        if sexo_id is not None and hasattr(usuario, "sexo_id"):
-            usuario.sexo_id = sexo_id
-        if hasattr(usuario, "tipo_documento_id"):
-            usuario.tipo_documento_id = tipo_documento_id
+        if hasattr(usuario, "id_usuario_crea") and id_usuario_crea:
+            usuario.id_usuario_crea = id_usuario_crea
 
         self.db.add(usuario)
         self.db.commit()
@@ -249,24 +169,6 @@ class UsuarioCRUD:
             .first()
         )
 
-    def obtener_usuario_por_nombre_usuario(
-        self, nombre_usuario: str
-    ) -> Optional[USUARIOS]:
-        """
-        Obtiene un usuario a partir de su nombre de usuario.
-
-        Args:
-            nombre_usuario: Nombre de usuario.
-
-        Returns:
-            Instancia de USUARIOS si existe, None en caso contrario.
-        """
-        return (
-            self.db.query(USUARIOS)
-            .filter(USUARIOS.nombre_usuario == (nombre_usuario or "").lower().strip())
-            .first()
-        )
-
     def obtener_usuarios(self, skip: int = 0, limit: int = 100) -> List[USUARIOS]:
         """
         Lista usuarios con paginación.
@@ -280,25 +182,21 @@ class UsuarioCRUD:
         """
         return self.db.query(USUARIOS).offset(skip).limit(limit).all()
 
-    def autenticar_usuario(
-        self, nombre_usuario: str, contraseña: str
-    ) -> Optional[USUARIOS]:
+    def autenticar_usuario(self, email: str, password: str) -> Optional[USUARIOS]:
         """
         Autentica un usuario por nombre de usuario o email y contraseña.
 
         Args:
-            nombre_usuario: Nombre de usuario o email.
-            contraseña: Contraseña en texto plano.
+            email: Nombre de usuario o email.
+            password: Contraseña en texto plano.
 
         Returns:
             Instancia de USUARIOS si las credenciales son válidas, None en caso contrario.
         """
-        usuario = self.obtener_usuario_por_nombre_usuario(nombre_usuario)
-        if not usuario:
-            usuario = self.obtener_usuario_por_email(nombre_usuario)
+        usuario = self.obtener_usuario_por_email(email)
         if not usuario or (hasattr(usuario, "activo") and not usuario.activo):
             return None
-        if PasswordManager.verify_password(contraseña, usuario.contraseña_hash):
+        if PasswordManager.verify_password(password, usuario.password):
             return usuario
         return None
 
@@ -323,9 +221,7 @@ class UsuarioCRUD:
         if not usuario:
             return False
 
-        if not PasswordManager.verify_password(
-            contraseña_actual, usuario.contraseña_hash
-        ):
+        if not PasswordManager.verify_password(contraseña_actual, usuario.password):
             raise ValueError("La contraseña actual es incorrecta")
 
         es_valida, mensaje = PasswordManager.validate_password_strength(
@@ -334,16 +230,15 @@ class UsuarioCRUD:
         if not es_valida:
             raise ValueError(f"Nueva contraseña inválida: {mensaje}")
 
-        usuario.contraseña_hash = PasswordManager.hash_password(nueva_contraseña)
+        usuario.password = PasswordManager.hash_password(nueva_contraseña)
         self.db.commit()
         return True
 
     def actualizar_usuario(self, usuario_id: UUID, **kwargs) -> Optional[USUARIOS]:
         """
         Actualiza un usuario con validaciones y normalización.
-        Campos soportados (si existen): nombre, nombre_usuario, email, telefono,
-        contraseña, activo, es_admin, rol_id (obligatorio si se envía), sexo_id,
-        tipo_documento_id (obligatorio si se envía), numero_documento.
+        Campos soportados (si existen): nombre, apellido, email, password, numero_documento,
+        id_rol, id_tipo_documento, id_sexo, activo.
 
         Args:
             usuario_id: UUID del usuario.
@@ -359,88 +254,46 @@ class UsuarioCRUD:
         if not usuario:
             return None
 
-        if "email" in kwargs:
+        if "email" in kwargs and kwargs["email"] is not None:
             email = kwargs["email"]
             if not self._validar_email(email):
                 raise ValueError("Email inválido")
             existente = self.obtener_usuario_por_email(email)
-            if existente and self._get_pk(existente) != usuario_id:
+            if existente and getattr(existente, "id", None) != usuario_id:
                 raise ValueError("El email ya está registrado")
             kwargs["email"] = email.lower().strip()
 
-        if "telefono" in kwargs and kwargs["telefono"]:
-            if not self._validar_telefono(kwargs["telefono"]):
-                raise ValueError("Formato de teléfono inválido")
-            kwargs["telefono"] = kwargs["telefono"].strip()
-
-        if "nombre" in kwargs:
-            nombre = kwargs["nombre"]
-            if not nombre or len((nombre or "").strip()) == 0:
-                raise ValueError("El nombre es obligatorio")
-            if len(nombre) > 100:
-                raise ValueError("El nombre no puede exceder 100 caracteres")
-            kwargs["nombre"] = nombre.strip()
-
-        if "nombre_usuario" in kwargs:
-            nombre_usuario = kwargs["nombre_usuario"]
-            if not self._validar_nombre_usuario(nombre_usuario):
-                raise ValueError(
-                    "El nombre de usuario debe tener entre 3-20 caracteres y solo contener letras, números y guiones bajos"
-                )
-            existente = self.obtener_usuario_por_nombre_usuario(nombre_usuario)
-            if existente and self._get_pk(existente) != usuario_id:
-                raise ValueError("El nombre de usuario ya está registrado")
-            kwargs["nombre_usuario"] = nombre_usuario.strip().lower()
-
-        if "contraseña" in kwargs:
-            contraseña = kwargs["contraseña"]
-            es_valida, mensaje = PasswordManager.validate_password_strength(contraseña)
+        if "password" in kwargs and kwargs["password"] is not None:
+            pw = kwargs.pop("password")
+            es_valida, mensaje = PasswordManager.validate_password_strength(pw)
             if not es_valida:
                 raise ValueError(f"Contraseña inválida: {mensaje}")
-            kwargs["contraseña_hash"] = PasswordManager.hash_password(contraseña)
-            del kwargs["contraseña"]
+            kwargs["password"] = PasswordManager.hash_password(pw)
 
-        if "rol_id" in kwargs:
-            if kwargs["rol_id"] is None:
-                raise ValueError("El rol no puede ser nulo")
-            from Entities.roles import Roles
+        if "numero_documento" in kwargs and kwargs["numero_documento"] is not None:
+            numero = kwargs["numero_documento"]
+            if not self._validar_numero_documento(numero):
+                raise ValueError("Número de documento inválido")
+            existente_doc = (
+                self.db.query(USUARIOS)
+                .filter(USUARIOS.numero_documento == numero.strip())
+                .first()
+            )
+            if existente_doc and getattr(existente_doc, "id", None) != usuario_id:
+                raise ValueError("El número de documento ya está registrado")
+            kwargs["numero_documento"] = numero.strip()
 
-            if self.db.get(Roles, kwargs["rol_id"]) is None:
+        if "id_rol" in kwargs and kwargs["id_rol"] is not None:
+            if self.db.get(Roles, kwargs["id_rol"]) is None:
                 raise ValueError("El rol especificado no existe")
 
-        if "sexo_id" in kwargs and kwargs["sexo_id"] is not None:
-            from Entities.sexo import Sexo
-
-            if self.db.get(Sexo, kwargs["sexo_id"]) is None:
-                raise ValueError("El sexo especificado no existe")
-
-        if "tipo_documento_id" in kwargs:
-            if kwargs["tipo_documento_id"] is None:
-                raise ValueError("El tipo de documento no puede ser nulo")
-            from Entities.tipo_documento import Tipo_documento
-
-            if self.db.get(Tipo_documento, kwargs["tipo_documento_id"]) is None:
+        if "id_tipo_documento" in kwargs and kwargs["id_tipo_documento"] is not None:
+            if self.db.get(Tipo_documento, kwargs["id_tipo_documento"]) is None:
                 raise ValueError("El tipo de documento especificado no existe")
 
-        if "numero_documento" in kwargs:
-            numero_documento = kwargs["numero_documento"]
-            if not numero_documento or not self._validar_numero_documento(
-                numero_documento
-            ):
-                raise ValueError("Número de documento inválido")
-            numero_documento = numero_documento.strip()
-            kwargs["numero_documento"] = numero_documento
-
-            if hasattr(USUARIOS, "numero_documento"):
-                existente_doc = (
-                    self.db.query(USUARIOS)
-                    .filter(
-                        USUARIOS.numero_documento == numero_documento,
-                    )
-                    .first()
-                )
-                if existente_doc and self._get_pk(existente_doc) != usuario_id:
-                    raise ValueError("El número de documento ya está registrado")
+        if "id_sexo" in kwargs and kwargs["id_sexo"] is not None:
+            if self.db.get(Sexo, kwargs["id_sexo"]) is None:
+                raise ValueError("El sexo especificado no existe")
 
         for key, value in kwargs.items():
             if hasattr(usuario, key):
@@ -488,7 +341,12 @@ class UsuarioCRUD:
         Returns:
             Lista de instancias de USUARIOS con es_admin=True.
         """
-        return self.db.query(USUARIOS).filter(USUARIOS.es_admin == True).all()
+        return (
+            self.db.query(USUARIOS)
+            .join(Roles, Roles.id == USUARIOS.id_rol)
+            .filter(Roles.nombre.ilike("admin"))
+            .all()
+        )
 
     def es_admin(self, usuario_id: UUID) -> bool:
         """
@@ -501,7 +359,10 @@ class UsuarioCRUD:
             True si es administrador, False en caso contrario.
         """
         usuario = self.obtener_usuario(usuario_id)
-        return bool(getattr(usuario, "es_admin", False)) if usuario else False
+        if not usuario:
+            return False
+        rol = self.db.get(Roles, getattr(usuario, "id_rol", None))
+        return bool(rol and (rol.nombre or "").strip().lower() == "admin")
 
     def obtener_admin_por_defecto(self) -> Optional[USUARIOS]:
         """
@@ -512,6 +373,7 @@ class UsuarioCRUD:
         """
         return (
             self.db.query(USUARIOS)
-            .filter(USUARIOS.email == "admin@system.com", USUARIOS.es_admin == True)
+            .join(Roles, Roles.id == USUARIOS.id_rol)
+            .filter(USUARIOS.email == "admin@system.com", Roles.nombre.ilike("admin"))
             .first()
         )

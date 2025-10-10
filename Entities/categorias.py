@@ -14,6 +14,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from database.config import Base
 from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
 
 
 class Categorias(Base):
@@ -91,7 +92,7 @@ class CategoriaUpdate(BaseModel):
 class CategoriaResponse(CategoriaModel):
     """Esquema de respuesta para categoría."""
 
-    id: int
+    id: UUID_t  # antes: int
 
     class Config:
         from_attributes = True

@@ -3,20 +3,12 @@ API de Carritos - Endpoints para gestión de carritos
 """
 
 from crud.compras.carritos_crud import CarritoCRUD
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
+from Entities.carritos import CarritoCreate, CarritoUpdate
 from database.config import get_db
-from crud.compras.carritos_crud import (
-    get_carrito,
-    get_carrito_activo_usuario,
-    get_or_create_carrito_activo,
-    list_carritos_usuario,
-    cerrar_carrito,
-    update_carrito,
-)
 from schemas import CarritoResponse, RespuestaAPI
 
 router = APIRouter(prefix="/carritos", tags=["carritos"])
@@ -43,7 +35,7 @@ async def obtener_carrito(carrito_id: UUID, db: Session = Depends(get_db)):
     """Obtener un carrito por ID."""
     try:
         carrito_crud = CarritoCRUD(db)
-        carrito = carrito_crud.obtener_carrito(carrito_id)
+        carrito = carrito_crud.get_carrito(carrito_id)
         if not carrito:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Carrito no encontrado"
@@ -64,7 +56,9 @@ async def listar_carritos_usuario(
 ):
     """Obtener todos los carritos de un usuario con paginación."""
     try:
-        return list_carritos_usuario(db, usuario_id, skip=skip, limit=limit)
+        carrito_crud = CarritoCRUD(db)
+        # CORRECCIÓN: no pasar 'db' como argumento
+        return carrito_crud.list_carritos_usuario(usuario_id, skip=skip, limit=limit)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error al listar carritos: {str(e)}"
@@ -75,7 +69,8 @@ async def listar_carritos_usuario(
 async def cerrar(carrito_id: UUID, db: Session = Depends(get_db)):
     try:
         """Inactivar Carrito."""
-        inactivar_carrito = cerrar_carrito(db, carrito_id)
+        carrito_crud = CarritoCRUD(db)
+        inactivar_carrito = carrito_crud.cerrar_carrito(carrito_id)
         if not inactivar_carrito:
             raise HTTPException(status_code=404, detail="Carrito no encontrado")
         return inactivar_carrito
@@ -89,19 +84,14 @@ async def cerrar(carrito_id: UUID, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=CarritoResponse, status_code=status.HTTP_201_CREATED)
 async def crear_carrito(carrito_data: CarritoCreate, db: Session = Depends(get_db)):
-    """Crear un nuevo carrito."""
+    """Crear u obtener el carrito activo del usuario."""
     try:
         carrito_crud = CarritoCRUD(db)
-
-        carrito = carrito_crud.crear_carrito(
-            nombre=carrito_data.nombre,
-            descripcion=carrito_data.descripcion,
-            precio=carrito_data.precio,
-            stock=carrito_data.stock,
-            categoria_id=carrito_data.categoria_id,
-            usuario_id=carrito_data.usuario_id,
+        obj = carrito_crud.get_or_create_carrito_activo(
+            id_usuario=carrito_data.id_usuario,
+            id_usuario_crea=getattr(carrito_data, "id_usuario_crea", None),
         )
-        return carrito
+        return obj
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
@@ -118,24 +108,24 @@ async def actualizar_carrito(
     """Actualizar un carrito existente."""
     try:
         carrito_crud = CarritoCRUD(db)
-
-        carrito_existente = carrito_crud.obtener_carrito(carrito_id)
+        carrito_existente = carrito_crud.get_carrito(carrito_id)
         if not carrito_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Carrito no encontrado"
             )
+        # Mapear 'estado' -> 'activo' si viene en el body
+        payload = {k: v for k, v in carrito_data.dict().items() if v is not None}
+        if "estado" in payload:
+            estado_val = (payload["estado"] or "").strip().lower()
+            payload["activo"] = estado_val in ("activo", "abierto", "true", "1")
+            del payload["estado"]
 
-        campos_actualizacion = {
-            k: v for k, v in carrito_data.dict().items() if v is not None
-        }
-
-        if not campos_actualizacion:
-            return carrito_existente
-
-        carrito_actualizado = carrito_crud.actualizar_carrito(
-            carrito_id, **campos_actualizacion
+        obj = carrito_crud.update_carrito(
+            carrito_id,
+            activo=payload.get("activo"),
+            id_usuario_edita=payload.get("id_usuario_edita"),
         )
-        return carrito_actualizado
+        return obj
     except HTTPException:
         raise
     except ValueError as e:
@@ -152,21 +142,18 @@ async def eliminar_carrito(carrito_id: UUID, db: Session = Depends(get_db)):
     """Eliminar un carrito."""
     try:
         carrito_crud = CarritoCRUD(db)
-
-        carrito_existente = carrito_crud.obtener_carrito(carrito_id)
+        carrito_existente = carrito_crud.get_carrito(carrito_id)
         if not carrito_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Carrito no encontrado"
             )
-
-        carrito_eliminado = carrito_crud.eliminar_carrito(carrito_id)
-        if carrito_eliminado:
+        ok = carrito_crud.eliminar_carrito(carrito_id)
+        if ok:
             return RespuestaAPI(mensaje="Carrito eliminado exitosamente", exito=True)
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error al eliminar carrito",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al eliminar carrito",
+        )
     except HTTPException:
         raise
     except Exception as e:

@@ -8,26 +8,11 @@ from uuid import UUID
 from crud.pedidos.facturas_crud import FacturaCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import FacturaCreate, FacturaResponse, FacturaUpdate, RespuestaAPI
+from schemas import RespuestaAPI
+from Entities.facturas import FacturaCreate, FacturaResponse, FacturaUpdate
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/facturas", tags=["facturas"])
-
-
-@router.get("/", response_model=List[FacturaResponse])
-async def obtener_facturas(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-):
-    """Obtener todas las facturas con paginación."""
-    try:
-        factura_crud = FacturaCRUD(db)
-        facturas = factura_crud.obtener_facturas(skip=skip, limit=limit)
-        return facturas
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener facturas: {str(e)}",
-        )
 
 
 @router.get("/{factura_id}", response_model=FacturaResponse)

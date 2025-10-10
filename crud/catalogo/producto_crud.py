@@ -69,29 +69,20 @@ class ProductoCRUD:
             raise ValueError("El stock no puede ser negativo")
 
         categoria = (
-            self.db.query(CATEGORIAS)
-            .filter(CATEGORIAS.id_categoria == categoria_id)
-            .first()
+            self.db.query(CATEGORIAS).filter(CATEGORIAS.id == categoria_id).first()
         )
         if not categoria:
             raise ValueError("La categoría especificada no existe")
 
-        usuario = (
-            self.db.query(USUARIOS).filter(USUARIOS.id_usuario == usuario_id).first()
-        )
-        if not usuario:
-            raise ValueError("El usuario especificado no existe")
-
-        if id_usuario_crea is None:
-            id_usuario_crea = usuario_id
+        # Auditoría: usar id_usuario_crea si llega, si no usar usuario_id como creador
+        id_usuario_crea = id_usuario_crea or usuario_id
 
         obj = PRODUCTOS(
             nombre=nombre.strip(),
             descripcion=descripcion.strip(),
             precio=precio,
             stock=stock,
-            categoria_id=categoria_id,
-            usuario_id=usuario_id,
+            id_categoria=categoria_id,
             id_usuario_crea=id_usuario_crea,
         )
         self.db.add(obj)
@@ -158,7 +149,7 @@ class ProductoCRUD:
         """
         return (
             self.db.query(PRODUCTOS)
-            .filter(PRODUCTOS.categoria_id == categoria_id)
+            .filter(PRODUCTOS.id_categoria == categoria_id)
             .all()
         )
 
@@ -172,7 +163,11 @@ class ProductoCRUD:
         Returns:
             Lista de productos del usuario indicado.
         """
-        return self.db.query(PRODUCTOS).filter(PRODUCTOS.usuario_id == usuario_id).all()
+        return (
+            self.db.query(PRODUCTOS)
+            .filter(PRODUCTOS.id_usuario_crea == usuario_id)
+            .all()
+        )
 
     def buscar_productos_por_nombre(self, nombre: str) -> List[PRODUCTOS]:
         """
@@ -250,32 +245,20 @@ class ProductoCRUD:
                 raise ValueError("El stock no puede ser negativo")
 
         if "categoria_id" in kwargs:
+            cat_id = kwargs["categoria_id"]
             categoria = (
-                self.db.query(CATEGORIAS)
-                .filter(CATEGORIAS.id_categoria == kwargs["categoria_id"])
-                .first()
+                self.db.query(CATEGORIAS).filter(CATEGORIAS.id == cat_id).first()
             )
             if not categoria:
                 raise ValueError("La categoría especificada no existe")
+            # mapear al nombre real de la columna
+            kwargs["id_categoria"] = kwargs.pop("categoria_id")
 
+        # ignorar 'usuario_id' (no existe en ORM)
         if "usuario_id" in kwargs:
-            usuario = (
-                self.db.query(USUARIOS)
-                .filter(USUARIOS.id_usuario == kwargs["usuario_id"])
-                .first()
-            )
-            if not usuario:
-                raise ValueError("El usuario especificado no existe")
+            kwargs.pop("usuario_id", None)
 
-        if id_usuario_edita is None:
-            admin = self.db.query(USUARIOS).filter(USUARIOS.es_admin == True).first()
-            if not admin:
-                raise ValueError(
-                    "No se encontró un usuario administrador para editar el producto"
-                )
-            id_usuario_edita = admin.id_usuario
-
-        if hasattr(obj, "id_usuario_edita"):
+        if id_usuario_edita is not None and hasattr(obj, "id_usuario_edita"):
             obj.id_usuario_edita = id_usuario_edita
 
         for k, v in kwargs.items():

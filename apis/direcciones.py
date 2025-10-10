@@ -9,12 +9,8 @@ from crud.usuarios.direcciones_crud import DireccionCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas import (
-    DireccionCreate,
-    DireccionUpdate,
-    DireccionResponse,
-    RespuestaAPI,
-)
+from schemas import RespuestaAPI
+from Entities.direcciones import DireccionCreate, DireccionResponse, DireccionUpdate
 
 
 router = APIRouter(prefix="/direcciones", tags=["direcciones"])
