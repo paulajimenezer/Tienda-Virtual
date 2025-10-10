@@ -2,19 +2,20 @@
 API de los Items del Carrito - Endpoints para gestión de los ítems del carrito
 """
 
-from crud.compras.carrito_items_crud import CarritoItemsCRUD
 from typing import List
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from crud.compras.carrito_items_crud import CarritoItemsCRUD
 from database.config import get_db
-from schemas import RespuestaAPI
 from Entities.carrito_items import (
     CarritoItemCreate,
     CarritoItemResponse,
     CarritoItemUpdate,
 )
+from schemas import RespuestaAPI
 
 router = APIRouter(prefix="/carrito-items", tags=["carrito_items"])
 

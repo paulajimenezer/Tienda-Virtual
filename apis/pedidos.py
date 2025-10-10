@@ -5,12 +5,13 @@ API de Pedidos - Endpoints para gestión de pedidos
 from typing import List
 from uuid import UUID
 
-from crud.pedidos.pedidos_crud import PedidoCRUD
-from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas import RespuestaAPI
+
+from crud.pedidos.pedidos_crud import PedidoCRUD
+from database.config import get_db
 from Entities.pedidos import PedidoCreate, PedidoResponse, PedidoUpdate
+from schemas import RespuestaAPI
 
 router = APIRouter(prefix="/pedidos", tags=["pedidos"])
 

@@ -1,8 +1,9 @@
 """CRUD para Items de Pedido con validaciones de stock y actualización de totales."""
 
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
-from datetime import datetime
+
 from sqlalchemy.orm import Session
 
 from Entities.pedido_items import Pedido_items as PEDIDO_ITEMS
@@ -72,7 +73,7 @@ class PedidoItemCRUD:
         Args:
             id_pedido: UUID del pedido.
         """
-        from .pedidos_crud import PedidoCRUD  
+        from .pedidos_crud import PedidoCRUD
 
         PedidoCRUD(self.db).recalcular_total(id_pedido)
 
@@ -215,9 +216,7 @@ class PedidoItemCRUD:
                 stock = int(getattr(producto, "stock", 0) or 0)
                 if delta > 0 and delta > stock:
                     raise ValueError("Stock insuficiente para incrementar la cantidad")
-                producto.stock = (
-                    stock - delta
-                )  
+                producto.stock = stock - delta
         if id_usuario_edita is None:
             id_usuario_edita = self._admin_fallback()
         if hasattr(obj, "id_usuario_edita"):

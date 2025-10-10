@@ -2,13 +2,15 @@
 API de Carritos - Endpoints para gestión de carritos
 """
 
-from crud.compras.carritos_crud import CarritoCRUD
 from typing import List
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from Entities.carritos import CarritoCreate, CarritoUpdate
+
+from crud.compras.carritos_crud import CarritoCRUD
 from database.config import get_db
+from Entities.carritos import CarritoCreate, CarritoUpdate
 from schemas import CarritoResponse, RespuestaAPI
 
 router = APIRouter(prefix="/carritos", tags=["carritos"])
