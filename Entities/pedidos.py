@@ -6,17 +6,18 @@ Pedidos realizados por los usuarios. Incluye validaciones y utilidades de
 serialización.
 """
 
-from typing import Any
 import uuid
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, text
-from sqlalchemy.orm import relationship
-from typing import Optional
-from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from database.config import Base
-from sqlalchemy.sql import func
+from typing import Any, Optional
 from uuid import UUID as UUID_t
+
+from pydantic import BaseModel, Field, validator
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from database.config import Base
 
 
 class Pedidos(Base):

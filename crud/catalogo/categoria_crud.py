@@ -4,6 +4,7 @@ Operaciones CRUD para Categoría
 
 from typing import List, Optional
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from Entities.categorias import Categorias as CATEGORIAS

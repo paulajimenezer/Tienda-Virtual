@@ -5,13 +5,13 @@ API de Direcciones - Endpoints para gestión de direcciones
 from typing import List
 from uuid import UUID
 
-from crud.usuarios.direcciones_crud import DireccionCRUD
-from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas import RespuestaAPI
-from Entities.direcciones import DireccionCreate, DireccionResponse, DireccionUpdate
 
+from crud.usuarios.direcciones_crud import DireccionCRUD
+from database.config import get_db
+from Entities.direcciones import DireccionCreate, DireccionResponse, DireccionUpdate
+from schemas import RespuestaAPI
 
 router = APIRouter(prefix="/direcciones", tags=["direcciones"])
 

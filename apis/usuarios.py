@@ -5,9 +5,11 @@ API de Usuarios - Endpoints para gestión de usuarios
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.usuarios.usuario_crud import UsuarioCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
 from schemas import (
     CambioContraseña,
     RespuestaAPI,
@@ -15,7 +17,6 @@ from schemas import (
     UsuarioResponse,
     UsuarioUpdate,
 )
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
@@ -74,6 +75,7 @@ async def obtener_usuario_por_email(email: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener usuario: {str(e)}",
         )
+
 
 @router.post("/", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
 async def crear_usuario(usuario_data: UsuarioCreate, db: Session = Depends(get_db)):

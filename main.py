@@ -4,21 +4,22 @@ API REST con FastAPI - Sin interfaz de consola
 """
 
 import uvicorn
-from apis import (
-    auth,
-    usuarios,
-    categorias,
-    productos,
-    pedidos,
-    pedido_items,
-    facturas,
-    descuentos,
-    carritos,
-    carrito_items,
-)
-from database.config import create_tables
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from apis import (
+    auth,
+    carrito_items,
+    carritos,
+    categorias,
+    descuentos,
+    facturas,
+    pedido_items,
+    pedidos,
+    productos,
+    usuarios,
+)
+from database.config import create_tables
 
 # Crear la aplicación FastAPI
 app = FastAPI(
