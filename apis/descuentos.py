@@ -10,16 +10,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from database.config import get_db
-from crud.compras.descuentos_crud import (
-    get_descuento,
-    list_descuentos,
-    get_por_codigo,
-    validar_codigo,
-    create_descuento,
-    update_descuento,
-    delete_descuento,
-)
-from schemas import DescuentoCreate, DescuentoUpdate, DescuentoResponse, RespuestaAPI
+from schemas import RespuestaAPI
+from Entities.descuentos import DescuentoCreate, DescuentoResponse, DescuentoUpdate
 
 router = APIRouter(prefix="/descuentos", tags=["descuentos"])
 
@@ -85,7 +77,8 @@ async def validar(
     codigo: str, fecha: Optional[datetime] = Query(None), db: Session = Depends(get_db)
 ):
     try:
-        validacion_codigo = validar_codigo(db, codigo, en_fecha=fecha)
+        descuentos_crud = DescuentosCRUD(db)
+        validacion_codigo = descuentos_crud.validar_codigo(db, codigo, en_fecha=fecha)
         if not validacion_codigo:
             raise HTTPException(status_code=404, detail="Descuento no válido")
         return validacion_codigo

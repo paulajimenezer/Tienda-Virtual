@@ -132,3 +132,14 @@ class RespuestaError(BaseModel):
     exito: bool = False
     error: str
     codigo: int
+
+
+class CarritoResponse(BaseModel):
+    id: UUID
+    id_usuario: UUID
+    activo: bool
+    fecha_creacion: datetime
+    fecha_edicion: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

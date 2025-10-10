@@ -4,7 +4,7 @@ API de Autenticación - Endpoints para login y autenticación
 
 from uuid import UUID
 
-from crud.usuarios import UsuarioCRUD
+from crud.usuarios.usuario_crud import UsuarioCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from schemas import RespuestaAPI, UsuarioLogin, UsuarioResponse

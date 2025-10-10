@@ -9,20 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.config import get_db
-from crud.compras.carrito_items_crud import (
-    get_item,
-    list_items_carrito,
-    add_item,
-    update_item_cantidad,
-    remove_item,
-    clear_carrito,
-)
-from schemas import (
-    CarritoItemCreate,
-    CarritoItemUpdate,
-    CarritoItemResponse,
-    RespuestaAPI,
-)
+from schemas import RespuestaAPI
+from Entities.carrito_items import CarritoItemCreate, CarritoItemResponse, CarritoItemUpdate
 
 router = APIRouter(prefix="/carrito-items", tags=["carrito_items"])
 
@@ -96,8 +84,9 @@ async def actualizar_item(
     try:
         if carrito_item_data.cantidad is None:
             raise HTTPException(status_code=400, detail="Digite una cantidad válida")
-        obj = update_item_cantidad(
-            db,
+        
+        carrito_items_crud = CarritoItemsCRUD(db)
+        obj = carrito_items_crud.actualizar_item_cantidad(
             item_id,
             cantidad=carrito_item_data.cantidad,
             id_usuario_edita=getattr(carrito_item_data, "id_usuario_edita", None),

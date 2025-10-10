@@ -9,7 +9,8 @@ from crud.pedidos.pedido_items_crud import PedidoItemCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas import PedidoItemCreate, PedidoItemResponse, PedidoItemUpdate, RespuestaAPI
+from schemas import RespuestaAPI
+from Entities.pedido_items import PedidoItemCreate, PedidoItemResponse, PedidoItemUpdate
 
 router = APIRouter(prefix="/pedido-items", tags=["pedido_items"])
 

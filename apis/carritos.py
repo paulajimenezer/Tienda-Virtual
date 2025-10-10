@@ -3,20 +3,12 @@ API de Carritos - Endpoints para gestión de carritos
 """
 
 from crud.compras.carritos_crud import CarritoCRUD
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
+from Entities.carritos import CarritoCreate, CarritoUpdate
 from database.config import get_db
-from crud.compras.carritos_crud import (
-    get_carrito,
-    get_carrito_activo_usuario,
-    get_or_create_carrito_activo,
-    list_carritos_usuario,
-    cerrar_carrito,
-    update_carrito,
-)
 from schemas import CarritoResponse, RespuestaAPI
 
 router = APIRouter(prefix="/carritos", tags=["carritos"])
@@ -64,7 +56,9 @@ async def listar_carritos_usuario(
 ):
     """Obtener todos los carritos de un usuario con paginación."""
     try:
-        return list_carritos_usuario(db, usuario_id, skip=skip, limit=limit)
+        carrito_crud = CarritoCRUD(db)
+
+        return carrito_crud.list_carritos_usuario(db, usuario_id, skip=skip, limit=limit)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error al listar carritos: {str(e)}"
@@ -75,7 +69,8 @@ async def listar_carritos_usuario(
 async def cerrar(carrito_id: UUID, db: Session = Depends(get_db)):
     try:
         """Inactivar Carrito."""
-        inactivar_carrito = cerrar_carrito(db, carrito_id)
+        carrito_crud = CarritoCRUD(db)
+        inactivar_carrito = carrito_crud.cerrar_carrito(carrito_id)
         if not inactivar_carrito:
             raise HTTPException(status_code=404, detail="Carrito no encontrado")
         return inactivar_carrito
