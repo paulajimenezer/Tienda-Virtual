@@ -7,16 +7,16 @@ para serialización.
 """
 
 import uuid
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
-from typing import Any, Optional
-from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from database.config import Base
+from typing import Any, Optional
 
-
+from pydantic import BaseModel, Field, validator
+from sqlalchemy import Column, DateTime, Float, ForeignKey, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
+from database.config import Base
 
 
 class Facturas(Base):

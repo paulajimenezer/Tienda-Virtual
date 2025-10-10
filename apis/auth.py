@@ -4,11 +4,12 @@ API de Autenticación - Endpoints para login y autenticación
 
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.usuarios import UsuarioCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
 from schemas import RespuestaAPI, UsuarioLogin, UsuarioResponse
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/auth", tags=["autenticación"])
 

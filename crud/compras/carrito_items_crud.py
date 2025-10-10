@@ -11,10 +11,11 @@ Permite:
 Valida existencia y estado de carrito y producto.
 """
 
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from typing import List, Optional
 from uuid import UUID
+
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from Entities.carrito_items import Carrito_items as CARRITO_ITEMS
 from Entities.carritos import Carritos as CARRITOS
@@ -124,7 +125,7 @@ def add_item(
         id_carrito=id_carrito,
         id_producto=id_producto,
         cantidad=int(cantidad),
-        id_usuario_crea=id_usuario_crea or id_carrito,  
+        id_usuario_crea=id_usuario_crea or id_carrito,
     )
     db.add(obj)
     db.commit()

@@ -5,17 +5,13 @@ API de Usuarios - Endpoints para gestión de usuarios
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.usuarios.usuario_crud import UsuarioCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import (
-    CambioContraseña,
-    RespuestaAPI,
-    UsuarioCreate,
-    UsuarioResponse,
-    UsuarioUpdate,
-)
-from sqlalchemy.orm import Session
+from schemas import (CambioContraseña, RespuestaAPI, UsuarioCreate,
+                     UsuarioResponse, UsuarioUpdate)
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 

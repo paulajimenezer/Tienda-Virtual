@@ -5,16 +5,13 @@ API de Tipo de Documento - Endpoints para gestión de tipos de documento
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.estandarizacion.tipo_documento_crud import TipoDocumentoCRUDCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import (
-    TipoDocumentoCreate,
-    TipoDocumentoResponse,
-    TipoDocumentoUpdate,
-    RespuestaAPI,
-)
-from sqlalchemy.orm import Session
+from schemas import (RespuestaAPI, TipoDocumentoCreate, TipoDocumentoResponse,
+                     TipoDocumentoUpdate)
 
 router = APIRouter(prefix="/tipo_documento", tags=["tipo_documento"])
 

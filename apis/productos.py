@@ -5,11 +5,13 @@ API de Productos - Endpoints para gestión de productos
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.catalogo.producto_crud import ProductoCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import ProductoCreate, ProductoResponse, ProductoUpdate, RespuestaAPI
-from sqlalchemy.orm import Session
+from schemas import (ProductoCreate, ProductoResponse, ProductoUpdate,
+                     RespuestaAPI)
 
 router = APIRouter(prefix="/productos", tags=["productos"])
 

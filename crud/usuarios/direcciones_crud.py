@@ -7,6 +7,7 @@ validaciones de datos y verificación de referencias.
 
 from typing import List, Optional
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from Entities.direcciones import Direcciones as DIRECCIONES

@@ -2,21 +2,18 @@
 API de Carritos - Endpoints para gestión de carritos
 """
 
-from crud.compras.carritos_crud import CarritoCRUD
 from typing import List, Optional
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from crud.compras.carritos_crud import (CarritoCRUD, cerrar_carrito,
+                                        get_carrito,
+                                        get_carrito_activo_usuario,
+                                        get_or_create_carrito_activo,
+                                        list_carritos_usuario, update_carrito)
 from database.config import get_db
-from crud.compras.carritos_crud import (
-    get_carrito,
-    get_carrito_activo_usuario,
-    get_or_create_carrito_activo,
-    list_carritos_usuario,
-    cerrar_carrito,
-    update_carrito,
-)
 from schemas import CarritoResponse, RespuestaAPI
 
 router = APIRouter(prefix="/carritos", tags=["carritos"])

@@ -2,24 +2,20 @@
 API de Descuentos - Endpoints para gestión de descuentos
 """
 
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
-from crud.compras.descuentos_crud import DescuentosCRUD
-from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from crud.compras.descuentos_crud import (DescuentosCRUD, create_descuento,
+                                          delete_descuento, get_descuento,
+                                          get_por_codigo, list_descuentos,
+                                          update_descuento, validar_codigo)
 from database.config import get_db
-from crud.compras.descuentos_crud import (
-    get_descuento,
-    list_descuentos,
-    get_por_codigo,
-    validar_codigo,
-    create_descuento,
-    update_descuento,
-    delete_descuento,
-)
-from schemas import DescuentoCreate, DescuentoUpdate, DescuentoResponse, RespuestaAPI
+from schemas import (DescuentoCreate, DescuentoResponse, DescuentoUpdate,
+                     RespuestaAPI)
 
 router = APIRouter(prefix="/descuentos", tags=["descuentos"])
 

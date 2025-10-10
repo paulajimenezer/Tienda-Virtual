@@ -6,9 +6,11 @@ despliega los menús correspondientes según el rol (admin o cliente).
 """
 
 import sys
-from database.config import check_connection, SessionLocal
+
 from Utilities.auth import login_prompt, register_client_prompt
 from Utilities.menus import admin_menu, cliente_menu
+
+from database.config import SessionLocal, check_connection
 
 
 def main():

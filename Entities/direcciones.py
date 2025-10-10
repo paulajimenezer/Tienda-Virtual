@@ -7,13 +7,15 @@ básica y normaliza strings.
 """
 
 import uuid
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean
-from sqlalchemy.sql import func
-from database.config import Base
-from sqlalchemy.orm import relationship
 from typing import Any, Optional
+
 from pydantic import BaseModel, Field, validator
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from database.config import Base
 
 
 class Direcciones(Base):

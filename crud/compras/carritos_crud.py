@@ -10,10 +10,11 @@ Permite:
 Todas las operaciones validan la existencia y estado del carrito.
 """
 
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from typing import List, Optional
 from uuid import UUID
+
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from Entities.carritos import Carritos as CARRITOS
 

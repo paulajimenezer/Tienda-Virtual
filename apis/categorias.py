@@ -5,11 +5,13 @@ API de Categorías - Endpoints para gestión de categorías
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.catalogo.categoria_crud import CategoriaCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import CategoriaCreate, CategoriaResponse, CategoriaUpdate, RespuestaAPI
-from sqlalchemy.orm import Session
+from schemas import (CategoriaCreate, CategoriaResponse, CategoriaUpdate,
+                     RespuestaAPI)
 
 router = APIRouter(prefix="/categorias", tags=["categorias"])
 

@@ -7,13 +7,15 @@ normaliza cadenas. Provee utilidades de serialización.
 """
 
 import uuid
+from datetime import datetime
+from typing import Any, Optional
+
+from pydantic import BaseModel, Field, validator
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from typing import Any, Optional
-from pydantic import BaseModel, Field, validator
-from datetime import datetime
+
 from database.config import Base
 
 

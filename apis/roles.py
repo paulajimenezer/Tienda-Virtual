@@ -5,11 +5,12 @@ API de Roles - Endpoints para gestión de roles
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from crud.estandarizacion.roles_crud import RolCRUD
 from database.config import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import RolesCreate, RolesResponse, RolesUpdate, RespuestaAPI
-from sqlalchemy.orm import Session
+from schemas import RespuestaAPI, RolesCreate, RolesResponse, RolesUpdate
 
 router = APIRouter(prefix="/roles", tags=["roles"])
 
