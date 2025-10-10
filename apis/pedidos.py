@@ -9,7 +9,8 @@ from crud.pedidos.pedidos_crud import PedidoCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas import PedidoCreate, PedidoUpdate, PedidoResponse, RespuestaAPI
+from schemas import RespuestaAPI
+from Entities.pedidos import PedidoCreate, PedidoResponse, PedidoUpdate
 
 router = APIRouter(prefix="/pedidos", tags=["pedidos"])
 
@@ -154,17 +155,23 @@ async def actualizar_estado_pedido(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado"
             )
 
-        if nuevo_estado not in ["Creado", "Enviado", "Entregado", "Cancelado"]:
+        if nuevo_estado not in [
+            "Creado",
+            "Pagado",
+            "Enviado",
+            "Entregado",
+            "Cancelado",
+        ]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Estado no válido",
             )
 
-        pedido_actualizado = pedido_crud.actualizar_estado(pedido_id, nuevo_estado)
+        pedido_actualizado = pedido_crud.cambiar_estado(pedido_id, nuevo_estado)
         return pedido_actualizado
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="El estado no es válido",

@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from database.config import Base
 from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
 
 
 class Pedidos(Base):
@@ -57,11 +58,12 @@ class Pedidos(Base):
 class PedidoModel(BaseModel):
     """Esquema Pydantic para pedidos."""
 
-    id_usuario: Optional[int] = Field(None, ge=1)
+    id_usuario: Optional[UUID_t] = Field(None)
     id_carrito: Optional[int] = Field(None, ge=1)
     estado: Optional[str] = Field(None, max_length=30)
     fecha: Optional[datetime] = None
     total: Optional[float] = Field(None, ge=0)
+    id_direccion: Optional[UUID_t] = Field(None)
 
     class Config:
         extra = "allow"
@@ -79,9 +81,10 @@ class PedidoModel(BaseModel):
 class PedidoCreate(PedidoModel):
     """Esquema para crear pedido."""
 
-    id_usuario: int = Field(..., ge=1)
-    id_carrito: int = Field(..., ge=1)
+    id_usuario: UUID_t = Field(...)
+    id_carrito: Optional[int] = Field(None, ge=1)
     total: float = Field(..., ge=0)
+    id_direccion: UUID_t = Field(...)
 
 
 class PedidoUpdate(BaseModel):
@@ -103,7 +106,7 @@ class PedidoUpdate(BaseModel):
 class PedidoResponse(PedidoModel):
     """Esquema de respuesta para pedido."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

@@ -8,7 +8,7 @@ from uuid import UUID
 from crud.estandarizacion.roles_crud import RolCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import RolesCreate, RolesResponse, RolesUpdate, RespuestaAPI
+from schemas import RespuestaAPI
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/roles", tags=["roles"])

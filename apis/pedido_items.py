@@ -9,33 +9,18 @@ from crud.pedidos.pedido_items_crud import PedidoItemCRUD
 from database.config import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas import PedidoItemCreate, PedidoItemResponse, PedidoItemUpdate, RespuestaAPI
+from schemas import RespuestaAPI
+from Entities.pedido_items import PedidoItemCreate, PedidoItemResponse, PedidoItemUpdate
 
 router = APIRouter(prefix="/pedido-items", tags=["pedido_items"])
 
 
-@router.get("/", response_model=List[PedidoItemResponse])
-async def obtener_items_pedido(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-):
-    """Obtener todos los ítems de los pedidos con paginación."""
-    try:
-        item_pedido_crud = PedidoItemCRUD(db)
-        items = item_pedido_crud.obtener_items(skip=skip, limit=limit)
-        return items
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener ítems de pedidos: {str(e)}",
-        )
-
-
 @router.get("/{item_id}", response_model=PedidoItemResponse)
-async def obtener_item(item_id: UUID, db: Session = Depends(get_db)):
+async def obtener_pedido_item(item_id: UUID, db: Session = Depends(get_db)):
     """Obtener un ítem de pedido por ID."""
     try:
         item_pedido_crud = PedidoItemCRUD(db)
-        item = item_pedido_crud.obtener_item(item_id)
+        item = item_pedido_crud.obtener_pedido_item(item_id)
         if not item:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Ítem no encontrado"
@@ -60,20 +45,6 @@ async def listar_items(
         raise HTTPException(status_code=500, detail=f"Error al listar ítems: {str(e)}")
 
 
-@router.get("/buscar/{nombre}", response_model=List[PedidoItemResponse])
-async def buscar_items_por_nombre(nombre: str, db: Session = Depends(get_db)):
-    """Buscar ítems de pedidos por nombre (búsqueda parcial)."""
-    try:
-        item_pedido_crud = PedidoItemCRUD(db)
-        items = item_pedido_crud.buscar_items_por_nombre(nombre)
-        return items
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al buscar ítems: {str(e)}",
-        )
-
-
 @router.post(
     "/", response_model=PedidoItemResponse, status_code=status.HTTP_201_CREATED
 )
@@ -82,14 +53,14 @@ async def crear_item(pedido_item_data: PedidoItemCreate, db: Session = Depends(g
     try:
         pedido_item_crud = PedidoItemCRUD(db)
 
-        pedido_item_crud.crear_pedido_item(
+        item = pedido_item_crud.crear_pedido_item(
             id_pedido=pedido_item_data.id_pedido,
             id_producto=pedido_item_data.id_producto,
             cantidad=pedido_item_data.cantidad,
             precio_unitario=getattr(pedido_item_data, "precio_unitario", None),
             id_usuario_crea=getattr(pedido_item_data, "id_usuario_crea", None),
         )
-        return pedido_item_data
+        return item
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
@@ -107,7 +78,7 @@ async def actualizar_item(
     try:
         item_pedido_crud = PedidoItemCRUD(db)
 
-        item_existente = item_pedido_crud.obtener_item(item_id)
+        item_existente = item_pedido_crud.obtener_pedido_item(item_id)
         if not item_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Ítem no encontrado"
@@ -120,7 +91,7 @@ async def actualizar_item(
         if not campos_actualizacion:
             return item_existente
 
-        item_actualizado = item_pedido_crud.actualizar_item(
+        item_actualizado = item_pedido_crud.actualizar_pedido_item(
             item_id, **campos_actualizacion
         )
         return item_actualizado
@@ -141,13 +112,13 @@ async def eliminar_item(pedido_item_id: UUID, db: Session = Depends(get_db)):
     try:
         item_pedido_crud = PedidoItemCRUD(db)
 
-        item_existente = item_pedido_crud.obtener_item(pedido_item_id)
+        item_existente = item_pedido_crud.obtener_pedido_item(pedido_item_id)
         if not item_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Ítem no encontrado"
             )
 
-        item_eliminado = item_pedido_crud.eliminar_item(pedido_item_id)
+        item_eliminado = item_pedido_crud.eliminar_pedido_item(pedido_item_id)
         if item_eliminado:
             return RespuestaAPI(mensaje="Ítem eliminado exitosamente", exito=True)
         else:

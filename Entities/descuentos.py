@@ -21,6 +21,9 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from database.config import Base
 from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
+from datetime import datetime
+from pydantic import field_validator, computed_field
 
 
 class Descuentos(Base):
@@ -51,29 +54,28 @@ class Descuentos(Base):
 class DescuentoModel(BaseModel):
     """Esquema Pydantic para descuentos.
 
-    - porcentaje o valor fijo no negativos.
-    - fecha vigencia opcional según el diseño actual.
+    Alineado con la tabla: codigo, porcentaje, fechas y activo.
     """
 
-    nombre: Optional[str] = Field(None, min_length=2, max_length=80)
-    descripcion: Optional[str] = Field(None, max_length=255)
+    codigo: Optional[str] = Field(None, min_length=1, max_length=50)
     porcentaje: Optional[float] = Field(None, ge=0, le=100)
-    valor_fijo: Optional[float] = Field(None, ge=0)
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
     activo: Optional[bool] = Field(True)
 
     class Config:
         extra = "allow"
-        anystr_strip_whitespace = True
+        str_strip_whitespace = True  # reemplaza anystr_strip_whitespace
         validate_assignment = True
 
-    @validator("nombre")
-    def _nombre_ok(cls, v: Optional[str]) -> Optional[str]:
+    @validator("codigo")
+    def _codigo_ok(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
         v = v.strip()
         if not v:
-            raise ValueError("El nombre no puede estar vacío")
-        return v.title()
+            raise ValueError("El código no puede estar vacío")
+        return v.upper()
 
     @validator("*", pre=True)
     def _normalize_strings(cls, v):
@@ -125,32 +127,77 @@ except Exception:
 class DescuentoCreate(DescuentoModel):
     """Esquema para crear descuento."""
 
-    nombre: str = Field(..., min_length=2, max_length=80)
+    codigo: str = Field(..., min_length=1, max_length=50)
+    porcentaje: float = Field(..., ge=0, le=100)
+    fecha_inicio: datetime = Field(...)
+    fecha_fin: datetime = Field(...)
+    activo: Optional[bool] = Field(True)
 
 
 class DescuentoUpdate(BaseModel):
     """Esquema para actualizar descuento."""
 
-    nombre: Optional[str] = Field(None, min_length=2, max_length=80)
-    descripcion: Optional[str] = Field(None, max_length=255)
+    codigo: Optional[str] = Field(None, min_length=1, max_length=50)
     porcentaje: Optional[float] = Field(None, ge=0, le=100)
-    valor_fijo: Optional[float] = Field(None, ge=0)
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
     activo: Optional[bool] = Field(None)
 
-    @validator("nombre")
-    def _nombre_ok(cls, v: Optional[str]) -> Optional[str]:
+    @validator("codigo")
+    def _codigo_ok(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
         v = v.strip()
         if not v:
-            raise ValueError("El nombre no puede estar vacío")
-        return v.title()
+            raise ValueError("El código no puede estar vacío")
+        return v.upper()
 
 
 class DescuentoResponse(DescuentoModel):
     """Esquema de respuesta para descuento."""
 
-    id: int
+    id: UUID_t  # antes: int
+    # Cambiar a lista de UUID y mapear desde la relación 'pedido'
+    pedidos: list[UUID_t] = Field(
+        default_factory=list, validation_alias="pedido", alias="pedidos"
+    )
+
+    # Campo calculado: indica si el descuento es válido "hoy" (UTC)
+    @computed_field
+    @property
+    def vigente(self) -> bool:
+        try:
+            now = datetime.utcnow()
+            if not bool(self.activo):
+                return False
+            if self.fecha_inicio is None or self.fecha_fin is None:
+                return False
+            ini = (
+                self.fecha_inicio.date()
+                if isinstance(self.fecha_inicio, datetime)
+                else self.fecha_inicio
+            )
+            fin = (
+                self.fecha_fin.date()
+                if isinstance(self.fecha_fin, datetime)
+                else self.fecha_fin
+            )
+            ref = now.date()
+            return ini <= ref <= fin
+        except Exception:
+            return False
+
+    # Convertir objetos PEDIDOS a sus UUIDs
+    @field_validator("pedidos", mode="before")
+    @classmethod
+    def _coerce_pedidos(cls, v):
+        if v is None:
+            return []
+        try:
+            return [getattr(it, "id", it) for it in v]
+        except TypeError:
+            return v
 
     class Config:
         from_attributes = True
+        extra = "forbid"  # no permitir campos extra en la respuesta

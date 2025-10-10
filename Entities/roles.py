@@ -15,6 +15,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from database.config import Base
+from uuid import UUID as UUID_t
 
 
 class Roles(Base):
@@ -101,7 +102,7 @@ class RolUpdate(BaseModel):
 class RolResponse(RolModel):
     """Esquema de respuesta para rol."""
 
-    id: int
+    id: UUID_t
     fecha_creacion: Optional[datetime] = None
     fecha_edicion: Optional[datetime] = None
 
