@@ -10,7 +10,11 @@ from sqlalchemy.orm import Session
 
 from database.config import get_db
 from schemas import RespuestaAPI
-from Entities.carrito_items import CarritoItemCreate, CarritoItemResponse, CarritoItemUpdate
+from Entities.carrito_items import (
+    CarritoItemCreate,
+    CarritoItemResponse,
+    CarritoItemUpdate,
+)
 
 router = APIRouter(prefix="/carrito-items", tags=["carrito_items"])
 
@@ -60,12 +64,9 @@ async def crear_item(item_data: CarritoItemCreate, db: Session = Depends(get_db)
         carrito_items_crud = CarritoItemsCRUD(db)
 
         item = carrito_items_crud.crear_item(
-            nombre=item_data.nombre,
-            descripcion=item_data.descripcion,
-            precio=item_data.precio,
-            stock=item_data.stock,
-            categoria_id=item_data.categoria_id,
-            usuario_id=item_data.usuario_id,
+            id_carrito=item_data.id_carrito,
+            id_producto=item_data.id_producto,
+            cantidad=item_data.cantidad,
         )
         return item
     except ValueError as e:
@@ -84,7 +85,7 @@ async def actualizar_item(
     try:
         if carrito_item_data.cantidad is None:
             raise HTTPException(status_code=400, detail="Digite una cantidad válida")
-        
+
         carrito_items_crud = CarritoItemsCRUD(db)
         obj = carrito_items_crud.actualizar_item_cantidad(
             item_id,

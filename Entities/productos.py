@@ -21,9 +21,8 @@ from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
 from database.config import Base
-
-
 from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
 
 
 class Productos(Base):
@@ -122,7 +121,7 @@ class ProductoUpdate(BaseModel):
 class ProductoResponse(ProductoModel):
     """Esquema de respuesta de producto."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

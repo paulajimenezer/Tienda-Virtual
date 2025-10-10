@@ -16,6 +16,7 @@ from database.config import Base
 
 
 from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
 
 
 class Carrito_items(Base):
@@ -46,8 +47,8 @@ class CarritoItemModel(BaseModel):
     valida que cantidad y precio sean valores positivos si se proporcionan.
     """
 
-    id_carrito: Optional[int] = Field(None, ge=1)
-    id_producto: Optional[int] = Field(None, ge=1)
+    id_carrito: Optional[UUID_t] = Field(None)
+    id_producto: Optional[UUID_t] = Field(None)
     cantidad: Optional[int] = Field(None, ge=1, description="Cantidad del producto")
     precio_unitario: Optional[float] = Field(None, ge=0, description="Precio unitario")
 
@@ -67,8 +68,8 @@ class CarritoItemModel(BaseModel):
 class CarritoItemCreate(CarritoItemModel):
     """Esquema para crear un ítem del carrito."""
 
-    id_carrito: int = Field(..., ge=1)
-    id_producto: int = Field(..., ge=1)
+    id_carrito: UUID_t = Field(...)
+    id_producto: UUID_t = Field(...)
     cantidad: int = Field(..., ge=1)
     precio_unitario: float = Field(..., ge=0)
 
@@ -83,7 +84,7 @@ class CarritoItemUpdate(BaseModel):
 class CarritoItemResponse(CarritoItemModel):
     """Esquema de respuesta para ítem del carrito."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

@@ -4,14 +4,14 @@ API de Descuentos - Endpoints para gestión de descuentos
 
 from typing import List, Optional
 from uuid import UUID
-from crud.compras.descuentos_crud import DescuentosCRUD
+from crud.compras.descuentos_crud import DescuentosCRUD, DescuentoCRUD
+from Entities.descuentos import DescuentoCreate, DescuentoResponse, DescuentoUpdate
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from database.config import get_db
 from schemas import RespuestaAPI
-from Entities.descuentos import DescuentoCreate, DescuentoResponse, DescuentoUpdate
 
 router = APIRouter(prefix="/descuentos", tags=["descuentos"])
 
@@ -32,32 +32,32 @@ async def obtener_descuentos(
         )
 
 
+@router.get("/codigo/{codigo}", response_model=DescuentoResponse)
+async def obtener_descuento_por_codigo(codigo: str, db: Session = Depends(get_db)):
+    """Obtener un descuento por su código (exacto, case-insensitive)."""
+    try:
+        crud = DescuentoCRUD(db)
+        desc = crud.obtener_por_codigo(codigo)
+        if not desc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Descuento no encontrado"
+            )
+        return desc
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al buscar descuento: {str(e)}",
+        )
+
+
 @router.get("/{descuento_id}", response_model=DescuentoResponse)
 async def obtener_descuento(descuento_id: UUID, db: Session = Depends(get_db)):
     """Obtener un descuento por ID."""
     try:
         descuentos_crud = DescuentosCRUD(db)
         descuento = descuentos_crud.obtener_descuento(descuento_id)
-        if not descuento:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Descuento no encontrado"
-            )
-        return descuento
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener descuento: {str(e)}",
-        )
-
-
-@router.get("/{descuento_codigo}", response_model=DescuentoResponse)
-async def obtener_descuento(descuento_codigo: str, db: Session = Depends(get_db)):
-    """Obtener un descuento por código."""
-    try:
-        descuentos_crud = DescuentosCRUD(db)
-        descuento = descuentos_crud.obtener_descuento(descuento_codigo)
         if not descuento:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Descuento no encontrado"

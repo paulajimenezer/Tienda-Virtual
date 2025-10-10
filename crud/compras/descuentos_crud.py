@@ -11,15 +11,17 @@ Permite:
 
 Los códigos son strings de hasta 50 caracteres, aplicables al finalizar la compra.
 """
+
 from typing import Optional, List
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from uuid import UUID
-from datetime import datetime
-
 from Entities.descuentos import Descuentos as DESCUENTOS
+from datetime import datetime  # asegurado
+from sqlalchemy.orm import Session as SASession
 
-class DescuentosCRUD:
+
+class DescuentoCRUD:
     def __init__(self, db: Session):
         self.db = db
 
@@ -36,29 +38,101 @@ class DescuentosCRUD:
         )
 
     def obtener_por_codigo(self, codigo: str) -> Optional[DESCUENTOS]:
+        """
+        Busca un descuento por código exacto (case-insensitive).
+        """
         if not codigo:
             return None
-        codigo_norm = (codigo or "").strip().upper()
+        cod = (codigo or "").strip().upper()
         return (
             self.db.query(DESCUENTOS)
-            .filter(func.upper(DESCUENTOS.codigo) == codigo_norm)
+            .filter(func.upper(DESCUENTOS.codigo) == cod)
             .first()
         )
 
-    def validar_codigo(self, codigo: str, en_fecha: Optional[datetime] = None) -> Optional[DESCUENTOS]:
-        d = self.obtener_por_codigo(codigo)
-        if not d:
+    def buscar_por_codigo(
+        self, texto: str, skip: int = 0, limit: int = 100
+    ) -> List[DESCUENTOS]:
+        """
+        Búsqueda parcial por código (case-insensitive).
+        """
+        term = f"%{(texto or '').strip().upper()}%"
+        return (
+            self.db.query(DESCUENTOS)
+            .filter(func.upper(DESCUENTOS.codigo).like(term))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    def _parse_fecha(self, value: Optional[object]) -> Optional[datetime]:
+        """Permite fecha como datetime o ISO string."""
+        if value is None:
             return None
-        if hasattr(d, "activo") and not bool(d.activo):
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value)
+            except Exception:
+                return None
+        return None
+
+    def validar_codigo(
+        self,
+        codigo: object,
+        fecha: Optional[object] = None,
+        en_fecha: Optional[object] = None,
+    ) -> Optional[DESCUENTOS]:
+        """
+        Valida un código de descuento en una fecha dada.
+        - código debe ser str (case-insensitive).
+        - fecha o en_fecha pueden ser datetime o string ISO ('YYYY-MM-DD').
+        Nota: No pase la Session como primer argumento; use instancia.validar_codigo(codigo, en_fecha=...).
+        """
+        # Si por error pasan la sesión como primer argumento, reacomodar parámetros
+        if isinstance(codigo, SASession):
+            codigo, fecha = fecha, en_fecha
+
+        # Mitigar mal uso posicional: si 'codigo' no es str y 'fecha' sí lo es
+        if not isinstance(codigo, str) and isinstance(fecha, str):
+            codigo, fecha = fecha, None
+
+        if not isinstance(codigo, str) or not codigo.strip():
             return None
-        ahora = en_fecha or datetime.utcnow()
-        if getattr(d, "fecha_inicio", None) and d.fecha_inicio > ahora:
+
+        cod = codigo.strip().upper()
+        ref_dt = (
+            self._parse_fecha(en_fecha) or self._parse_fecha(fecha) or datetime.utcnow()
+        )
+
+        desc = (
+            self.db.query(DESCUENTOS)
+            .filter(func.upper(DESCUENTOS.codigo) == cod, DESCUENTOS.activo == True)
+            .first()
+        )
+        if not desc:
             return None
-        if getattr(d, "fecha_fin", None) and d.fecha_fin < ahora:
+
+        ini = getattr(desc, "fecha_inicio", None)
+        fin = getattr(desc, "fecha_fin", None)
+
+        # Comparación por día (inclusive) para evitar errores de hora/zonas
+        ref_d = ref_dt.date()
+        ini_d = (
+            ini.date()
+            if isinstance(ini, datetime)
+            else getattr(ini, "date", lambda: ini)()
+        )
+        fin_d = (
+            fin.date()
+            if isinstance(fin, datetime)
+            else getattr(fin, "date", lambda: fin)()
+        )
+
+        if ini_d and fin_d and not (ini_d <= ref_d <= fin_d):
             return None
-        if getattr(d, "porcentaje", None) is None or d.porcentaje <= 0:
-            return None
-        return d
+        return desc
 
     def crear_descuento(
         self,
@@ -157,3 +231,7 @@ class DescuentosCRUD:
         self.db.delete(obj)
         self.db.commit()
         return True
+
+
+# Alias para compatibilidad con imports existentes
+DescuentosCRUD = DescuentoCRUD

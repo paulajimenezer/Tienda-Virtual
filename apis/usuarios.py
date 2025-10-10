@@ -75,29 +75,6 @@ async def obtener_usuario_por_email(email: str, db: Session = Depends(get_db)):
             detail=f"Error al obtener usuario: {str(e)}",
         )
 
-
-@router.get("/username/{nombre_usuario}", response_model=UsuarioResponse)
-async def obtener_usuario_por_nombre_usuario(
-    nombre_usuario: str, db: Session = Depends(get_db)
-):
-    """Obtener un usuario por nombre de usuario."""
-    try:
-        usuario_crud = UsuarioCRUD(db)
-        usuario = usuario_crud.obtener_usuario_por_nombre_usuario(nombre_usuario)
-        if not usuario:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
-            )
-        return usuario
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener usuario: {str(e)}",
-        )
-
-
 @router.post("/", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
 async def crear_usuario(usuario_data: UsuarioCreate, db: Session = Depends(get_db)):
     """Crear un nuevo usuario."""
@@ -105,11 +82,14 @@ async def crear_usuario(usuario_data: UsuarioCreate, db: Session = Depends(get_d
         usuario_crud = UsuarioCRUD(db)
         usuario = usuario_crud.crear_usuario(
             nombre=usuario_data.nombre,
-            nombre_usuario=usuario_data.nombre_usuario,
+            apellido=usuario_data.apellido,
             email=usuario_data.email,
-            contraseña=usuario_data.contraseña,
-            telefono=usuario_data.telefono,
-            es_admin=usuario_data.es_admin,
+            password=usuario_data.password,
+            numero_documento=usuario_data.numero_documento,
+            id_rol=usuario_data.id_rol,
+            id_tipo_documento=usuario_data.id_tipo_documento,
+            id_sexo=getattr(usuario_data, "id_sexo", None),
+            id_usuario_crea=getattr(usuario_data, "id_usuario_crea", None),
         )
         return usuario
     except ValueError as e:
@@ -128,22 +108,16 @@ async def actualizar_usuario(
     """Actualizar un usuario existente."""
     try:
         usuario_crud = UsuarioCRUD(db)
-
-        # Verificar que el usuario existe
         usuario_existente = usuario_crud.obtener_usuario(usuario_id)
         if not usuario_existente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
             )
-
-        # Filtrar campos None para actualización
         campos_actualizacion = {
             k: v for k, v in usuario_data.dict().items() if v is not None
         }
-
         if not campos_actualizacion:
             return usuario_existente
-
         usuario_actualizado = usuario_crud.actualizar_usuario(
             usuario_id, **campos_actualizacion
         )

@@ -13,6 +13,7 @@ from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator
+from uuid import UUID as UUID_t
 
 
 class Tipo_documento(Base):
@@ -93,7 +94,7 @@ class TipoDocumentoUpdate(BaseModel):
 class TipoDocumentoResponse(TipoDocumentoModel):
     """Esquema de respuesta para tipo de documento."""
 
-    id: int
+    id: UUID_t
 
     class Config:
         from_attributes = True

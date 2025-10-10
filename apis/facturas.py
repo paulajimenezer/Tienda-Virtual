@@ -15,22 +15,6 @@ from sqlalchemy.orm import Session
 router = APIRouter(prefix="/facturas", tags=["facturas"])
 
 
-@router.get("/", response_model=List[FacturaResponse])
-async def obtener_facturas(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-):
-    """Obtener todas las facturas con paginación."""
-    try:
-        factura_crud = FacturaCRUD(db)
-        facturas = factura_crud.obtener_facturas(skip=skip, limit=limit)
-        return facturas
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener facturas: {str(e)}",
-        )
-
-
 @router.get("/{factura_id}", response_model=FacturaResponse)
 async def obtener_factura(factura_id: UUID, db: Session = Depends(get_db)):
     """Obtener factura por ID."""

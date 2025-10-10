@@ -9,11 +9,12 @@ para serialización.
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, DateTime, ForeignKey, Boolean
+from sqlalchemy.sql import func
+from database.config import Base
 from sqlalchemy.orm import relationship
 from typing import Any, Optional
 from pydantic import BaseModel, validator, Field
-from database.config import Base
-from sqlalchemy.sql import func
+from uuid import UUID as UUID_t
 
 
 class Carritos(Base):
@@ -46,7 +47,7 @@ class CarritoModel(BaseModel):
     - Normaliza strings.
     """
 
-    id_usuario: Optional[int] = Field(None, ge=1)
+    id_usuario: Optional[UUID_t] = Field(None)  # <-- antes int
     estado: Optional[str] = Field(
         None, max_length=30, description="estado del carrito, p.ej. activo, cerrado"
     )
@@ -67,7 +68,7 @@ class CarritoModel(BaseModel):
 class CarritoCreate(CarritoModel):
     """Esquema para crear carrito."""
 
-    id_usuario: int = Field(..., ge=1)
+    id_usuario: UUID_t = Field(...)
 
 
 class CarritoUpdate(BaseModel):
@@ -88,7 +89,7 @@ class CarritoUpdate(BaseModel):
 class CarritoResponse(CarritoModel):
     """Esquema de respuesta para carrito."""
 
-    id: int
+    id: UUID_t  # <-- antes int
 
     class Config:
         from_attributes = True

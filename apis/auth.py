@@ -15,19 +15,15 @@ router = APIRouter(prefix="/auth", tags=["autenticación"])
 
 @router.post("/login", response_model=UsuarioResponse)
 async def login(login_data: UsuarioLogin, db: Session = Depends(get_db)):
-    """Autenticar un usuario con nombre de usuario/email y contraseña."""
+    """Autenticar un usuario con email y contraseña."""
     try:
         usuario_crud = UsuarioCRUD(db)
-        usuario = usuario_crud.autenticar_usuario(
-            login_data.nombre_usuario, login_data.contraseña
-        )
-
+        usuario = usuario_crud.autenticar_usuario(login_data.email, login_data.password)
         if not usuario:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Credenciales incorrectas o usuario inactivo",
             )
-
         return usuario
     except HTTPException:
         raise
@@ -43,7 +39,6 @@ async def crear_usuario_admin(db: Session = Depends(get_db)):
     """Crear usuario administrador por defecto."""
     try:
         usuario_crud = UsuarioCRUD(db)
-
         admin_existente = usuario_crud.obtener_admin_por_defecto()
         if admin_existente:
             return RespuestaAPI(
@@ -52,16 +47,35 @@ async def crear_usuario_admin(db: Session = Depends(get_db)):
                 datos={"admin_id": str(admin_existente.id)},
             )
 
+        # Buscar rol 'Admin' y un tipo de documento disponible
+        from Entities.roles import Roles
+        from Entities.tipo_documento import Tipo_documento
         from auth.security import PasswordManager
+
+        rol_admin = db.query(Roles).filter(Roles.nombre.ilike("admin")).first()
+        if not rol_admin:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No existe un rol 'Admin'. Créelo antes de continuar.",
+            )
+
+        tipo_doc = db.query(Tipo_documento).first()
+        if not tipo_doc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No existen tipos de documento. Créelos antes de continuar.",
+            )
 
         contraseña_admin = PasswordManager.generate_secure_password(12)
 
         admin = usuario_crud.crear_usuario(
-            nombre="Administrador del Sistema",
-            nombre_usuario="admin",
+            nombre="Administrador",
+            apellido="Sistema",
             email="admin@system.com",
-            contraseña=contraseña_admin,
-            es_admin=True,
+            password=contraseña_admin,
+            numero_documento="9999999",
+            id_rol=rol_admin.id,
+            id_tipo_documento=tipo_doc.id,
         )
 
         return RespuestaAPI(
@@ -102,7 +116,7 @@ async def verificar_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
                 "nombre": usuario.nombre,
                 "email": usuario.email,
                 "activo": usuario.activo,
-                "es_admin": usuario.es_admin,
+                "es_admin": UsuarioCRUD(db).es_admin(usuario_id),
             },
         )
     except HTTPException:

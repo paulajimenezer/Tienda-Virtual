@@ -123,3 +123,31 @@ class CarritoCRUD:
         self.db.commit()
         self.db.refresh(obj)
         return obj
+
+    def obtener_carritos(self, skip: int = 0, limit: int = 100) -> List[CARRITOS]:
+        """Lista todos los carritos con paginación."""
+        return (
+            self.db.query(CARRITOS)
+            .order_by(CARRITOS.fecha_creacion.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    # alias semántico para mantener compatibilidad con APIs que llaman 'obtener_carrito'
+    def obtener_carrito(self, carrito_id: UUID) -> Optional[CARRITOS]:
+        return self.get_carrito(carrito_id)
+
+    def eliminar_carrito(self, carrito_id: UUID) -> bool:
+        """Elimina o desactiva un carrito por su ID."""
+        obj = self.db.get(CARRITOS, carrito_id)
+        if not obj:
+            return False
+        if hasattr(obj, "activo"):
+            obj.activo = False
+            self.db.commit()
+            self.db.refresh(obj)
+            return True
+        self.db.delete(obj)
+        self.db.commit()
+        return True
