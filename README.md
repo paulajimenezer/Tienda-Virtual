@@ -21,8 +21,14 @@ Sistema de consola en Python para gestión de catálogo, carrito de compras, ped
 - database: configuración de conexión y helpers de inicialización
 - Migrations (Alembic): migraciones de esquema (opcional)
 
+- Backend (MVC-style):
+  - backend/
+    - models/  (Pydantic schemas, ORM modelos)
+    - views/   (composición de la app, CORS, registro de routers)
+    - controllers/ (controladores; por ahora se usa el paquete existente `apis`)
+
 Estructura relevante:
-- main.py
+- main.py (entrypoint que usa la factoría de la app)
 - init_db.py
 - Utilities/
   - auth.py
@@ -68,10 +74,11 @@ Alternativa sin seeders:
 ## Ejecución
 
 - python main.py
-- Menú principal:
-  - 1) Iniciar sesión
-  - 2) Crear cuenta (cliente)
-  - 9) Salir
+
+Notas:
+- main.py delega la construcción de la app a backend/views/app.py (create_app).
+- Los routers actuales del paquete `apis` se incluyen desde la capa de views.
+- Puedes migrar gradualmente el código de `apis` a `backend/controllers` sin romper compatibilidad.
 
 ## Uso como Cliente
 

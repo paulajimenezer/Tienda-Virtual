@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from crud.usuarios.usuario_crud import UsuarioCRUD
+from Backend.Controllers.crud.usuarios.usuario_crud import UsuarioCRUD
 from database.config import get_db
 from schemas import RespuestaAPI, UsuarioLogin, UsuarioResponse
 
