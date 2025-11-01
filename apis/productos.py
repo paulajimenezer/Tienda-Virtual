@@ -8,11 +8,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.catalogo.producto_crud import ProductoCRUD
 from database.config import get_db
 from schemas import ProductoCreate, ProductoResponse, ProductoUpdate, RespuestaAPI
 
-router = APIRouter(prefix="/productos", tags=["productos"])
+router = APIRouter(
+    prefix="/productos",
+    tags=["productos"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[ProductoResponse])

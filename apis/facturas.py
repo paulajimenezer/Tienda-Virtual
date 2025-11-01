@@ -8,12 +8,17 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.pedidos.facturas_crud import FacturaCRUD
 from database.config import get_db
 from Entities.facturas import FacturaCreate, FacturaResponse, FacturaUpdate
 from schemas import RespuestaAPI
 
-router = APIRouter(prefix="/facturas", tags=["facturas"])
+router = APIRouter(
+    prefix="/facturas",
+    tags=["facturas"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/{factura_id}", response_model=FacturaResponse)

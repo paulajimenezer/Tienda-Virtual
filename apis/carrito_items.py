@@ -16,8 +16,13 @@ from Entities.carrito_items import (
     CarritoItemUpdate,
 )
 from schemas import RespuestaAPI
+from auth.jwt_utils import get_current_user
 
-router = APIRouter(prefix="/carrito-items", tags=["carrito_items"])
+router = APIRouter(
+    prefix="/carrito-items",
+    tags=["carrito_items"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[CarritoItemResponse])

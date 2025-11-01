@@ -12,8 +12,13 @@ from crud.pedidos.pedidos_crud import PedidoCRUD
 from database.config import get_db
 from Entities.pedidos import PedidoCreate, PedidoResponse, PedidoUpdate
 from schemas import RespuestaAPI
+from auth.jwt_utils import get_current_user
 
-router = APIRouter(prefix="/pedidos", tags=["pedidos"])
+router = APIRouter(
+    prefix="/pedidos",
+    tags=["pedidos"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[PedidoResponse])

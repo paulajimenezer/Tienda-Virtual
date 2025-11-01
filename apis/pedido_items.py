@@ -8,12 +8,17 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.pedidos.pedido_items_crud import PedidoItemCRUD
 from database.config import get_db
 from Entities.pedido_items import PedidoItemCreate, PedidoItemResponse, PedidoItemUpdate
 from schemas import RespuestaAPI
 
-router = APIRouter(prefix="/pedido-items", tags=["pedido_items"])
+router = APIRouter(
+    prefix="/pedido-items",
+    tags=["pedido_items"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/{item_id}", response_model=PedidoItemResponse)

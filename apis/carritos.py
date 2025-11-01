@@ -12,8 +12,13 @@ from crud.compras.carritos_crud import CarritoCRUD
 from database.config import get_db
 from Entities.carritos import CarritoCreate, CarritoUpdate
 from schemas import CarritoResponse, RespuestaAPI
+from auth.jwt_utils import get_current_user
 
-router = APIRouter(prefix="/carritos", tags=["carritos"])
+router = APIRouter(
+    prefix="/carritos",
+    tags=["carritos"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[CarritoResponse])

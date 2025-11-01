@@ -9,12 +9,17 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.compras.descuentos_crud import DescuentoCRUD, DescuentosCRUD
 from database.config import get_db
 from Entities.descuentos import DescuentoCreate, DescuentoResponse, DescuentoUpdate
 from schemas import RespuestaAPI
 
-router = APIRouter(prefix="/descuentos", tags=["descuentos"])
+router = APIRouter(
+    prefix="/descuentos",
+    tags=["descuentos"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[DescuentoResponse])

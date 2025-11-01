@@ -2,30 +2,66 @@
 API de Autenticación - Endpoints para login y autenticación
 """
 
+from datetime import timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from crud.usuarios.usuario_crud import UsuarioCRUD
 from database.config import get_db
 from schemas import RespuestaAPI, UsuarioLogin, UsuarioResponse
+from auth.jwt_utils import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    create_access_token,
+    get_current_user,
+)
 
 router = APIRouter(prefix="/auth", tags=["autenticación"])
 
 
-@router.post("/login", response_model=UsuarioResponse)
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    usuario: UsuarioResponse
+
+
+def _authenticate_and_build_response(
+    email: str, password: str, db: Session
+) -> TokenResponse:
+    usuario_crud = UsuarioCRUD(db)
+    usuario = usuario_crud.autenticar_usuario(email, password)
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas o usuario inactivo",
+        )
+
+    usuario_schema = UsuarioResponse.from_orm(usuario)
+    rol_valor = getattr(usuario, "id_rol", None)
+    if isinstance(rol_valor, UUID):
+        rol_valor = str(rol_valor)
+
+    access_token = create_access_token(
+        {
+            "sub": str(usuario.id),
+            "email": usuario.email,
+            "rol": rol_valor,
+        },
+        timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    return TokenResponse(access_token=access_token, usuario=usuario_schema)
+
+
+@router.post("/login", response_model=TokenResponse)
 async def login(login_data: UsuarioLogin, db: Session = Depends(get_db)):
     """Autenticar un usuario con email y contraseña."""
     try:
-        usuario_crud = UsuarioCRUD(db)
-        usuario = usuario_crud.autenticar_usuario(login_data.email, login_data.password)
-        if not usuario:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credenciales incorrectas o usuario inactivo",
-            )
-        return usuario
+        return _authenticate_and_build_response(
+            login_data.email, login_data.password, db
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -33,6 +69,15 @@ async def login(login_data: UsuarioLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error durante el login: {str(e)}",
         )
+
+
+@router.post("/token", response_model=TokenResponse)
+async def login_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    """Autenticar un usuario usando el flujo de password grant de OAuth2."""
+    return _authenticate_and_build_response(form_data.username, form_data.password, db)
 
 
 @router.post("/crear-admin", response_model=RespuestaAPI)
@@ -141,3 +186,8 @@ async def estado_autenticacion():
             "autenticacion": "Activa",
         },
     )
+
+
+@router.get("/me", response_model=UsuarioResponse)
+async def read_current_user(usuario_actual=Depends(get_current_user)):
+    return UsuarioResponse.from_orm(usuario_actual)
