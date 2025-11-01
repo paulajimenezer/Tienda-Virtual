@@ -16,7 +16,7 @@ from Entities.descuentos import DescuentoCreate, DescuentoResponse, DescuentoUpd
 from schemas import RespuestaAPI
 
 router = APIRouter(
-    prefix="/descuentos",
+    prefix="/api/descuentos",
     tags=["descuentos"],
     dependencies=[Depends(get_current_user)],
 )

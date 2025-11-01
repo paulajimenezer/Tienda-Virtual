@@ -19,7 +19,7 @@ from auth.jwt_utils import (
     get_current_user,
 )
 
-router = APIRouter(prefix="/auth", tags=["autenticación"])
+router = APIRouter(prefix="/api/auth", tags=["autenticación"])
 
 
 class TokenResponse(BaseModel):
@@ -40,15 +40,15 @@ def _authenticate_and_build_response(
         )
 
     usuario_schema = UsuarioResponse.from_orm(usuario)
-    rol_valor = getattr(usuario, "id_rol", None)
-    if isinstance(rol_valor, UUID):
-        rol_valor = str(rol_valor)
+    es_admin = usuario_crud.es_admin(usuario.id)
+    rol_valor: str = "admin" if es_admin else "cliente"
 
     access_token = create_access_token(
         {
             "sub": str(usuario.id),
             "email": usuario.email,
             "rol": rol_valor,
+            "es_admin": es_admin,
         },
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )

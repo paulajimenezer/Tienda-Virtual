@@ -15,7 +15,7 @@ from Entities.facturas import FacturaCreate, FacturaResponse, FacturaUpdate
 from schemas import RespuestaAPI
 
 router = APIRouter(
-    prefix="/facturas",
+    prefix="/api/facturas",
     tags=["facturas"],
     dependencies=[Depends(get_current_user)],
 )

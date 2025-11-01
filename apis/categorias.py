@@ -14,7 +14,7 @@ from database.config import get_db
 from schemas import CategoriaCreate, CategoriaResponse, CategoriaUpdate, RespuestaAPI
 
 router = APIRouter(
-    prefix="/categorias",
+    prefix="/api/categorias",
     tags=["categorias"],
     dependencies=[Depends(get_current_user)],
 )

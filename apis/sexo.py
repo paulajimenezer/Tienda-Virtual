@@ -14,7 +14,7 @@ from database.config import get_db
 from schemas import RespuestaAPI, SexoCreate, SexoResponse, SexoUpdate
 
 router = APIRouter(
-    prefix="/sexo",
+    prefix="/api/sexo",
     tags=["sexo"],
     dependencies=[Depends(get_current_user)],
 )

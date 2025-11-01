@@ -14,7 +14,7 @@ from database.config import get_db
 from schemas import ProductoCreate, ProductoResponse, ProductoUpdate, RespuestaAPI
 
 router = APIRouter(
-    prefix="/productos",
+    prefix="/api/productos",
     tags=["productos"],
     dependencies=[Depends(get_current_user)],
 )

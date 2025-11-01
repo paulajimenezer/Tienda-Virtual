@@ -15,7 +15,7 @@ from Entities.pedido_items import PedidoItemCreate, PedidoItemResponse, PedidoIt
 from schemas import RespuestaAPI
 
 router = APIRouter(
-    prefix="/pedido-items",
+    prefix="/api/pedido-items",
     tags=["pedido_items"],
     dependencies=[Depends(get_current_user)],
 )

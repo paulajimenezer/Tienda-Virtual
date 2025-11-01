@@ -15,7 +15,7 @@ from schemas import CarritoResponse, RespuestaAPI
 from auth.jwt_utils import get_current_user
 
 router = APIRouter(
-    prefix="/carritos",
+    prefix="/api/carritos",
     tags=["carritos"],
     dependencies=[Depends(get_current_user)],
 )

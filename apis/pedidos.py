@@ -15,7 +15,7 @@ from schemas import RespuestaAPI
 from auth.jwt_utils import get_current_user
 
 router = APIRouter(
-    prefix="/pedidos",
+    prefix="/api/pedidos",
     tags=["pedidos"],
     dependencies=[Depends(get_current_user)],
 )

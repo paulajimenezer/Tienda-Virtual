@@ -14,7 +14,7 @@ from database.config import get_db
 from schemas import RespuestaAPI
 
 router = APIRouter(
-    prefix="/roles",
+    prefix="/api/roles",
     tags=["roles"],
     dependencies=[Depends(get_current_user)],
 )

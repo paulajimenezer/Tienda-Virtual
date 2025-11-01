@@ -19,7 +19,7 @@ from schemas import (
 )
 
 router = APIRouter(
-    prefix="/tipo_documento",
+    prefix="/api/tipo_documento",
     tags=["tipo_documento"],
     dependencies=[Depends(get_current_user)],
 )

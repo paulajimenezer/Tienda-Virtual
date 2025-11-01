@@ -20,7 +20,7 @@ from schemas import (
 )
 
 router = APIRouter(
-    prefix="/usuarios",
+    prefix="/api/usuarios",
     tags=["usuarios"],
     dependencies=[Depends(get_current_user)],
 )
