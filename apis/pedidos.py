@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from crud.pedidos.pedidos_crud import PedidoCRUD
 from database.config import get_db
 from Entities.pedidos import PedidoCreate, PedidoResponse, PedidoUpdate
-from schemas import RespuestaAPI
+from schemas import RespuestaAPI, PedidoEnriquecido
 from auth.jwt_utils import get_current_user
 
 router = APIRouter(
@@ -21,15 +21,45 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[PedidoResponse])
+@router.get("/", response_model=List[PedidoEnriquecido])
 async def obtener_pedidos(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
-    """Obtener todos los pedidos con paginación."""
+    """Obtener todos los pedidos con paginación. Respuesta enriquecida con usuario y items."""
     try:
         pedido_crud = PedidoCRUD(db)
         pedidos = pedido_crud.obtener_pedidos(skip=skip, limit=limit)
-        return pedidos
+
+        results = []
+        for p in pedidos:
+            data = (
+                p.to_dict()
+                if hasattr(p, "to_dict")
+                else {k: getattr(p, k) for k in p.__dict__}
+            )
+            usuario = getattr(p, "usuario", None)
+            data["usuario"] = (
+                usuario.to_dict()
+                if usuario and hasattr(usuario, "to_dict")
+                else (usuario.__dict__ if usuario else None)
+            )
+            items = getattr(p, "pedido_item", None)
+            data["items"] = (
+                [
+                    it.to_dict() if hasattr(it, "to_dict") else it.__dict__
+                    for it in items
+                ]
+                if items
+                else []
+            )
+            direccion = getattr(p, "direccion", None)
+            data["direccion"] = (
+                direccion.to_dict()
+                if direccion and hasattr(direccion, "to_dict")
+                else (direccion.__dict__ if direccion else None)
+            )
+            results.append(data)
+        return results
 
     except Exception as e:
         raise HTTPException(
@@ -38,9 +68,46 @@ async def obtener_pedidos(
         )
 
 
-@router.get("/{pedido_id}", response_model=PedidoResponse)
+@router.get("/usuario/{usuario_id}", response_model=List[PedidoEnriquecido])
+async def obtener_pedidos_por_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
+    """Obtener pedidos por usuario (enriquecidos)."""
+    try:
+        pedido_crud = PedidoCRUD(db)
+        pedidos = pedido_crud.obtener_pedidos_por_usuario(usuario_id)
+        results = []
+        for p in pedidos:
+            data = (
+                p.to_dict()
+                if hasattr(p, "to_dict")
+                else {k: getattr(p, k) for k in p.__dict__}
+            )
+            items = getattr(p, "pedido_item", None)
+            data["items"] = (
+                [
+                    it.to_dict() if hasattr(it, "to_dict") else it.__dict__
+                    for it in items
+                ]
+                if items
+                else []
+            )
+            direccion = getattr(p, "direccion", None)
+            data["direccion"] = (
+                direccion.to_dict()
+                if direccion and hasattr(direccion, "to_dict")
+                else (direccion.__dict__ if direccion else None)
+            )
+            results.append(data)
+        return results
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener pedidos por usuario: {str(e)}",
+        )
+
+
+@router.get("/{pedido_id}", response_model=PedidoEnriquecido)
 async def obtener_pedido(pedido_id: UUID, db: Session = Depends(get_db)):
-    """Obtener un pedido por ID."""
+    """Obtener un pedido por ID (enriquecido con usuario, items y dirección)."""
     try:
         pedido_crud = PedidoCRUD(db)
         pedido = pedido_crud.obtener_pedido(pedido_id)
@@ -48,7 +115,31 @@ async def obtener_pedido(pedido_id: UUID, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado"
             )
-        return pedido
+
+        data = (
+            pedido.to_dict()
+            if hasattr(pedido, "to_dict")
+            else {k: getattr(pedido, k) for k in pedido.__dict__}
+        )
+        usuario = getattr(pedido, "usuario", None)
+        data["usuario"] = (
+            usuario.to_dict()
+            if usuario and hasattr(usuario, "to_dict")
+            else (usuario.__dict__ if usuario else None)
+        )
+        items = getattr(pedido, "pedido_item", None)
+        data["items"] = (
+            [it.to_dict() if hasattr(it, "to_dict") else it.__dict__ for it in items]
+            if items
+            else []
+        )
+        direccion = getattr(pedido, "direccion", None)
+        data["direccion"] = (
+            direccion.to_dict()
+            if direccion and hasattr(direccion, "to_dict")
+            else (direccion.__dict__ if direccion else None)
+        )
+        return data
     except HTTPException:
         raise
     except Exception as e:
@@ -58,13 +149,36 @@ async def obtener_pedido(pedido_id: UUID, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/usuario/{usuario_id}", response_model=List[PedidoResponse])
+@router.get("/usuario/{usuario_id}", response_model=List[PedidoEnriquecido])
 async def obtener_pedidos_por_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
-    """Obtener pedidos por usuario."""
+    """Obtener pedidos por usuario (enriquecidos)."""
     try:
         pedido_crud = PedidoCRUD(db)
         pedidos = pedido_crud.obtener_pedidos_por_usuario(usuario_id)
-        return pedidos
+        results = []
+        for p in pedidos:
+            data = (
+                p.to_dict()
+                if hasattr(p, "to_dict")
+                else {k: getattr(p, k) for k in p.__dict__}
+            )
+            items = getattr(p, "pedido_item", None)
+            data["items"] = (
+                [
+                    it.to_dict() if hasattr(it, "to_dict") else it.__dict__
+                    for it in items
+                ]
+                if items
+                else []
+            )
+            direccion = getattr(p, "direccion", None)
+            data["direccion"] = (
+                direccion.to_dict()
+                if direccion and hasattr(direccion, "to_dict")
+                else (direccion.__dict__ if direccion else None)
+            )
+            results.append(data)
+        return results
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
