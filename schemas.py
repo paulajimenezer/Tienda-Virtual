@@ -105,6 +105,8 @@ class ProductoUpdate(BaseModel):
     stock: Optional[int] = None
     categoria_id: Optional[UUID] = None
     usuario_id: Optional[UUID] = None
+    activo: Optional[bool] = None
+    id_usuario_edita: Optional[UUID] = None
 
 
 class ProductoResponse(BaseModel):

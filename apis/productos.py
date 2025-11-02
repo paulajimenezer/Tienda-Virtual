@@ -147,8 +147,11 @@ async def actualizar_producto(
         if not campos_actualizacion:
             return producto_existente
 
+        # extraer id_usuario_edita si fue enviado y pasarlo explícitamente
+        id_usuario_edita = campos_actualizacion.pop("id_usuario_edita", None)
+
         producto_actualizado = producto_crud.actualizar_producto(
-            producto_id, **campos_actualizacion
+            producto_id, id_usuario_edita=id_usuario_edita, **campos_actualizacion
         )
         return producto_actualizado
     except HTTPException:
