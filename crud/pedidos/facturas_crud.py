@@ -32,6 +32,16 @@ class FacturaCRUD:
         """
         self.db = db
 
+    def obtener_facturas(self, skip: int = 0, limit: int = 100) -> List[FACTURAS]:
+        """Lista facturas con paginación opcional."""
+        return (
+            self.db.query(FACTURAS)
+            .order_by(FACTURAS.fecha_emision.desc())
+            .offset(max(skip, 0))
+            .limit(limit if limit and limit > 0 else None)
+            .all()
+        )
+
     def _admin_fallback(self) -> UUID:
         """
         Obtiene el UUID de un usuario administrador para auditoría.
