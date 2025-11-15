@@ -11,20 +11,48 @@ from sqlalchemy.orm import Session
 from crud.compras.carritos_crud import CarritoCRUD
 from database.config import get_db
 from Entities.carritos import CarritoCreate, CarritoUpdate
-from schemas import CarritoResponse, RespuestaAPI
+from schemas import CarritoResponse, RespuestaAPI, CarritoEnriquecido
+from auth.jwt_utils import get_current_user
 
-router = APIRouter(prefix="/carritos", tags=["carritos"])
+router = APIRouter(
+    prefix="/api/carritos",
+    tags=["carritos"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
-@router.get("/", response_model=List[CarritoResponse])
+@router.get("/", response_model=List[CarritoEnriquecido])
 async def obtener_carritos(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
-    """Obtener todos los carritos con paginación."""
+    """Obtener todos los carritos con paginación. Respuesta enriquecida con usuario y items."""
     try:
         carrito_crud = CarritoCRUD(db)
         carritos = carrito_crud.obtener_carritos(skip=skip, limit=limit)
-        return carritos
+        results = []
+        for c in carritos:
+            data = (
+                c.to_dict()
+                if hasattr(c, "to_dict")
+                else {k: getattr(c, k) for k in c.__dict__}
+            )
+            usuario = getattr(c, "usuario", None)
+            data["usuario"] = (
+                usuario.to_dict()
+                if usuario and hasattr(usuario, "to_dict")
+                else (usuario.__dict__ if usuario else None)
+            )
+            items = getattr(c, "carrito_item", None)
+            data["items"] = (
+                [
+                    it.to_dict() if hasattr(it, "to_dict") else it.__dict__
+                    for it in items
+                ]
+                if items
+                else []
+            )
+            results.append(data)
+        return results
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -32,9 +60,9 @@ async def obtener_carritos(
         )
 
 
-@router.get("/{carrito_id}", response_model=CarritoResponse)
+@router.get("/{carrito_id}", response_model=CarritoEnriquecido)
 async def obtener_carrito(carrito_id: UUID, db: Session = Depends(get_db)):
-    """Obtener un carrito por ID."""
+    """Obtener un carrito por ID (enriquecido con usuario e items)."""
     try:
         carrito_crud = CarritoCRUD(db)
         carrito = carrito_crud.get_carrito(carrito_id)
@@ -42,7 +70,24 @@ async def obtener_carrito(carrito_id: UUID, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Carrito no encontrado"
             )
-        return carrito
+        data = (
+            carrito.to_dict()
+            if hasattr(carrito, "to_dict")
+            else {k: getattr(carrito, k) for k in carrito.__dict__}
+        )
+        usuario = getattr(carrito, "usuario", None)
+        data["usuario"] = (
+            usuario.to_dict()
+            if usuario and hasattr(usuario, "to_dict")
+            else (usuario.__dict__ if usuario else None)
+        )
+        items = getattr(carrito, "carrito_item", None)
+        data["items"] = (
+            [it.to_dict() if hasattr(it, "to_dict") else it.__dict__ for it in items]
+            if items
+            else []
+        )
+        return data
     except HTTPException:
         raise
     except Exception as e:
@@ -52,15 +97,35 @@ async def obtener_carrito(carrito_id: UUID, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/usuario/{usuario_id}", response_model=List[CarritoResponse])
+@router.get("/usuario/{usuario_id}", response_model=List[CarritoEnriquecido])
+@router.get("/by-user/{usuario_id}", response_model=List[CarritoEnriquecido])
 async def listar_carritos_usuario(
     usuario_id: UUID, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
-    """Obtener todos los carritos de un usuario con paginación."""
+    """Obtener todos los carritos de un usuario con paginación (enriquecidos)."""
     try:
         carrito_crud = CarritoCRUD(db)
-        # CORRECCIÓN: no pasar 'db' como argumento
-        return carrito_crud.list_carritos_usuario(usuario_id, skip=skip, limit=limit)
+        carritos = carrito_crud.list_carritos_usuario(
+            usuario_id, skip=skip, limit=limit
+        )
+        results = []
+        for c in carritos:
+            data = (
+                c.to_dict()
+                if hasattr(c, "to_dict")
+                else {k: getattr(c, k) for k in c.__dict__}
+            )
+            items = getattr(c, "carrito_item", None)
+            data["items"] = (
+                [
+                    it.to_dict() if hasattr(it, "to_dict") else it.__dict__
+                    for it in items
+                ]
+                if items
+                else []
+            )
+            results.append(data)
+        return results
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error al listar carritos: {str(e)}"

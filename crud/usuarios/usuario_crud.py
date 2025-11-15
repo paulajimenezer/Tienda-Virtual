@@ -48,7 +48,7 @@ class UsuarioCRUD:
 
     def _validar_numero_documento(self, numero: str) -> bool:
         """
-        Valida que el número de documento tenga 7 o 10 dígitos numéricos.
+        Valida que el número de documento tenga entre 7 y 12 dígitos numéricos.
 
         Args:
             numero: Número de documento a validar.
@@ -57,7 +57,7 @@ class UsuarioCRUD:
             True si el formato es válido, False en caso contrario.
         """
         numero = (numero or "").strip()
-        return numero.isdigit() and len(numero) in (7, 10)
+        return numero.isdigit() and 7 <= len(numero) <= 12
 
     def crear_usuario(
         self,

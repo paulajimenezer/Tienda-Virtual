@@ -3,7 +3,7 @@ Modelos Pydantic para las respuestas de la API
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Any
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
@@ -105,6 +105,8 @@ class ProductoUpdate(BaseModel):
     stock: Optional[int] = None
     categoria_id: Optional[UUID] = None
     usuario_id: Optional[UUID] = None
+    activo: Optional[bool] = None
+    id_usuario_edita: Optional[UUID] = None
 
 
 class ProductoResponse(BaseModel):
@@ -153,6 +155,79 @@ class CarritoResponse(BaseModel):
     activo: bool
     fecha_creacion: datetime
     fecha_edicion: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CarritoItemResponse(BaseModel):
+    id: UUID
+    id_carrito: UUID
+    id_producto: UUID
+    cantidad: int
+    # precio_unitario may be absent in some DB designs; keep optional to avoid response validation errors
+    precio_unitario: Optional[float] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CarritoEnriquecido(CarritoResponse):
+    usuario: Optional[UsuarioResponse] = None
+    items: List[CarritoItemResponse] = []
+
+
+class PedidoItemResponse(BaseModel):
+    id: UUID
+    id_pedido: UUID
+    id_producto: UUID
+    cantidad: int
+    precio_unitario: float
+
+    class Config:
+        from_attributes = True
+
+
+class DireccionResponse(BaseModel):
+    id: UUID
+    id_usuario: UUID
+    direccion: str
+    ciudad: Optional[str] = None
+    provincia: Optional[str] = None
+    codigo_postal: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class PedidoEnriquecido(BaseModel):
+    # Campos base del pedido
+    id: UUID
+    id_usuario: UUID
+    id_direccion: UUID
+    fecha_pedido: datetime
+    estado: str
+    total: float
+
+    usuario: Optional[UsuarioResponse] = None
+    items: List[PedidoItemResponse] = []
+    direccion: Optional[DireccionResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class FacturaEnriquecida(BaseModel):
+    id: UUID
+    id_pedido: UUID
+    numero_factura: str
+    fecha_emision: datetime
+    subtotal: float
+    impuesto: float
+    total: float
+
+    pedido: Optional[PedidoEnriquecido] = None
+    usuario: Optional[UsuarioResponse] = None
 
     class Config:
         from_attributes = True

@@ -8,17 +8,79 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.pedidos.facturas_crud import FacturaCRUD
 from database.config import get_db
 from Entities.facturas import FacturaCreate, FacturaResponse, FacturaUpdate
-from schemas import RespuestaAPI
+from schemas import RespuestaAPI, FacturaEnriquecida
 
-router = APIRouter(prefix="/facturas", tags=["facturas"])
+router = APIRouter(
+    prefix="/api/facturas",
+    tags=["facturas"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
-@router.get("/{factura_id}", response_model=FacturaResponse)
+def _serialize_factura_enriquecida(factura):
+    data = (
+        factura.to_dict()
+        if hasattr(factura, "to_dict")
+        else {k: getattr(factura, k) for k in factura.__dict__}
+    )
+    pedido = getattr(factura, "pedido", None)
+    data["pedido"] = (
+        pedido.to_dict()
+        if pedido and hasattr(pedido, "to_dict")
+        else (pedido.__dict__ if pedido else None)
+    )
+    usuario = getattr(pedido, "usuario", None) if pedido else None
+    data["usuario"] = (
+        usuario.to_dict()
+        if usuario and hasattr(usuario, "to_dict")
+        else (usuario.__dict__ if usuario else None)
+    )
+    return data
+
+
+@router.get("/", response_model=List[FacturaEnriquecida])
+async def listar_facturas(
+    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    """Listar facturas con paginación opcional. La respuesta incluye datos relacionados
+    (pedido y usuario propietario) para evitar múltiples llamadas desde el frontend.
+    """
+    try:
+        factura_crud = FacturaCRUD(db)
+        facturas = factura_crud.obtener_facturas(skip=skip, limit=limit)
+        return [_serialize_factura_enriquecida(f) for f in facturas]
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener facturas: {str(e)}",
+        )
+
+
+@router.get("/usuario/{usuario_id}", response_model=List[FacturaEnriquecida])
+async def listar_facturas_por_usuario(
+    usuario_id: UUID, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    """Listar facturas pertenecientes a los pedidos de un usuario específico."""
+    try:
+        factura_crud = FacturaCRUD(db)
+        facturas = factura_crud.obtener_facturas_por_usuario(
+            usuario_id, skip=skip, limit=limit
+        )
+        return [_serialize_factura_enriquecida(f) for f in facturas]
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener facturas del usuario: {str(e)}",
+        )
+
+
+@router.get("/{factura_id}", response_model=FacturaEnriquecida)
 async def obtener_factura(factura_id: UUID, db: Session = Depends(get_db)):
-    """Obtener factura por ID."""
+    """Obtener factura por ID, incluyendo datos relacionados (pedido y usuario)."""
     try:
         factura_crud = FacturaCRUD(db)
         factura = factura_crud.obtener_factura(factura_id)
@@ -26,7 +88,7 @@ async def obtener_factura(factura_id: UUID, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Factura no encontrada"
             )
-        return factura
+        return _serialize_factura_enriquecida(factura)
     except HTTPException:
         raise
     except Exception as e:

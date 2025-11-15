@@ -77,6 +77,8 @@ class CarritoUpdate(BaseModel):
     """Esquema para actualizar carrito."""
 
     estado: Optional[str] = Field(None, max_length=30)
+    activo: Optional[bool] = None
+    id_usuario_edita: Optional[UUID_t] = None
 
     @validator("estado")
     def _estado_ok(cls, v: Optional[str]) -> Optional[str]:

@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from Entities.descuentos import Descuentos as DESCUENTOS
@@ -330,6 +331,38 @@ class PedidoCRUD:
         if (obj.estado or "").strip().title() in ESTADOS_FINALES:
             raise ValueError("No se puede eliminar un pedido en estado final")
 
+    def buscar_pedidos_por_nombre(
+        self, nombre: str, skip: int = 0, limit: int = 100
+    ) -> List[PEDIDOS]:
+        """Busca pedidos por nombre/apellido del usuario asociado."""
+        termino = (nombre or "").strip().lower()
+        if not termino:
+            return []
+
+        patron = f"%{termino}%"
+        full_name = func.concat(
+            func.coalesce(USUARIOS.nombre, ""),
+            " ",
+            func.coalesce(USUARIOS.apellido, ""),
+        )
+
+        query = (
+            self.db.query(PEDIDOS)
+            .join(USUARIOS, USUARIOS.id == PEDIDOS.id_usuario)
+            .filter(
+                or_(
+                    func.lower(func.coalesce(USUARIOS.nombre, "")).like(patron),
+                    func.lower(func.coalesce(USUARIOS.apellido, "")).like(patron),
+                    func.lower(full_name).like(patron),
+                )
+            )
+            .offset(max(skip, 0))
+        )
+
+        if limit and limit > 0:
+            query = query.limit(limit)
+
+        return query.all()
         if getattr(obj, "factura", None):
             raise ValueError("El pedido tiene factura asociada")
 

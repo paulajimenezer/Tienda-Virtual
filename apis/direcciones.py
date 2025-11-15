@@ -12,8 +12,13 @@ from crud.usuarios.direcciones_crud import DireccionCRUD
 from database.config import get_db
 from Entities.direcciones import DireccionCreate, DireccionResponse, DireccionUpdate
 from schemas import RespuestaAPI
+from auth.jwt_utils import get_current_user
 
-router = APIRouter(prefix="/direcciones", tags=["direcciones"])
+router = APIRouter(
+    prefix="/api/direcciones",
+    tags=["direcciones"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[DireccionResponse])

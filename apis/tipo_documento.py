@@ -8,6 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.estandarizacion.tipo_documento_crud import TipoDocumentoCRUDCRUD
 from database.config import get_db
 from schemas import (
@@ -17,7 +18,11 @@ from schemas import (
     TipoDocumentoUpdate,
 )
 
-router = APIRouter(prefix="/tipo_documento", tags=["tipo_documento"])
+router = APIRouter(
+    prefix="/api/tipo_documento",
+    tags=["tipo_documento"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[TipoDocumentoResponse])

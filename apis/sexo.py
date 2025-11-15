@@ -8,11 +8,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.estandarizacion.sexo_crud import SexoCRUD
 from database.config import get_db
 from schemas import RespuestaAPI, SexoCreate, SexoResponse, SexoUpdate
 
-router = APIRouter(prefix="/sexo", tags=["sexo"])
+router = APIRouter(
+    prefix="/api/sexo",
+    tags=["sexo"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[SexoResponse])

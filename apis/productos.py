@@ -8,11 +8,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.catalogo.producto_crud import ProductoCRUD
 from database.config import get_db
 from schemas import ProductoCreate, ProductoResponse, ProductoUpdate, RespuestaAPI
 
-router = APIRouter(prefix="/productos", tags=["productos"])
+router = APIRouter(
+    prefix="/api/productos",
+    tags=["productos"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[ProductoResponse])
@@ -142,8 +147,11 @@ async def actualizar_producto(
         if not campos_actualizacion:
             return producto_existente
 
+        # extraer id_usuario_edita si fue enviado y pasarlo explícitamente
+        id_usuario_edita = campos_actualizacion.pop("id_usuario_edita", None)
+
         producto_actualizado = producto_crud.actualizar_producto(
-            producto_id, **campos_actualizacion
+            producto_id, id_usuario_edita=id_usuario_edita, **campos_actualizacion
         )
         return producto_actualizado
     except HTTPException:

@@ -8,11 +8,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from auth.jwt_utils import get_current_user
 from crud.catalogo.categoria_crud import CategoriaCRUD
 from database.config import get_db
 from schemas import CategoriaCreate, CategoriaResponse, CategoriaUpdate, RespuestaAPI
 
-router = APIRouter(prefix="/categorias", tags=["categorias"])
+router = APIRouter(
+    prefix="/api/categorias",
+    tags=["categorias"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=List[CategoriaResponse])
