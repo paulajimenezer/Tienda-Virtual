@@ -187,11 +187,15 @@ async def obtener_pedidos_por_usuario(usuario_id: UUID, db: Session = Depends(ge
 
 
 @router.get("/buscar/{nombre}", response_model=List[PedidoResponse])
-async def buscar_pedidos_por_nombre(nombre: str, db: Session = Depends(get_db)):
+async def buscar_pedidos_por_nombre(
+    nombre: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
     """Buscar pedidos por nombre (búsqueda parcial)."""
     try:
         pedido_crud = PedidoCRUD(db)
-        pedidos = pedido_crud.buscar_pedidos_por_nombre(nombre)
+        pedidos = pedido_crud.buscar_pedidos_por_nombre(
+            nombre, skip=max(skip, 0), limit=limit
+        )
         return pedidos
     except Exception as e:
         raise HTTPException(

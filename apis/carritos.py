@@ -98,6 +98,7 @@ async def obtener_carrito(carrito_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.get("/usuario/{usuario_id}", response_model=List[CarritoEnriquecido])
+@router.get("/by-user/{usuario_id}", response_model=List[CarritoEnriquecido])
 async def listar_carritos_usuario(
     usuario_id: UUID, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):

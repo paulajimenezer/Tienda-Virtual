@@ -21,6 +21,27 @@ router = APIRouter(
 )
 
 
+def _serialize_factura_enriquecida(factura):
+    data = (
+        factura.to_dict()
+        if hasattr(factura, "to_dict")
+        else {k: getattr(factura, k) for k in factura.__dict__}
+    )
+    pedido = getattr(factura, "pedido", None)
+    data["pedido"] = (
+        pedido.to_dict()
+        if pedido and hasattr(pedido, "to_dict")
+        else (pedido.__dict__ if pedido else None)
+    )
+    usuario = getattr(pedido, "usuario", None) if pedido else None
+    data["usuario"] = (
+        usuario.to_dict()
+        if usuario and hasattr(usuario, "to_dict")
+        else (usuario.__dict__ if usuario else None)
+    )
+    return data
+
+
 @router.get("/", response_model=List[FacturaEnriquecida])
 async def listar_facturas(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
@@ -31,32 +52,29 @@ async def listar_facturas(
     try:
         factura_crud = FacturaCRUD(db)
         facturas = factura_crud.obtener_facturas(skip=skip, limit=limit)
-
-        results = []
-        for f in facturas:
-            data = (
-                f.to_dict()
-                if hasattr(f, "to_dict")
-                else {k: getattr(f, k) for k in f.__dict__}
-            )
-            pedido = getattr(f, "pedido", None)
-            data["pedido"] = (
-                pedido.to_dict()
-                if pedido and hasattr(pedido, "to_dict")
-                else (pedido.__dict__ if pedido else None)
-            )
-            usuario = getattr(pedido, "usuario", None) if pedido else None
-            data["usuario"] = (
-                usuario.to_dict()
-                if usuario and hasattr(usuario, "to_dict")
-                else (usuario.__dict__ if usuario else None)
-            )
-            results.append(data)
-        return results
+        return [_serialize_factura_enriquecida(f) for f in facturas]
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener facturas: {str(e)}",
+        )
+
+
+@router.get("/usuario/{usuario_id}", response_model=List[FacturaEnriquecida])
+async def listar_facturas_por_usuario(
+    usuario_id: UUID, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    """Listar facturas pertenecientes a los pedidos de un usuario específico."""
+    try:
+        factura_crud = FacturaCRUD(db)
+        facturas = factura_crud.obtener_facturas_por_usuario(
+            usuario_id, skip=skip, limit=limit
+        )
+        return [_serialize_factura_enriquecida(f) for f in facturas]
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener facturas del usuario: {str(e)}",
         )
 
 
@@ -70,25 +88,7 @@ async def obtener_factura(factura_id: UUID, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Factura no encontrada"
             )
-
-        data = (
-            factura.to_dict()
-            if hasattr(factura, "to_dict")
-            else {k: getattr(factura, k) for k in factura.__dict__}
-        )
-        pedido = getattr(factura, "pedido", None)
-        data["pedido"] = (
-            pedido.to_dict()
-            if pedido and hasattr(pedido, "to_dict")
-            else (pedido.__dict__ if pedido else None)
-        )
-        usuario = getattr(pedido, "usuario", None) if pedido else None
-        data["usuario"] = (
-            usuario.to_dict()
-            if usuario and hasattr(usuario, "to_dict")
-            else (usuario.__dict__ if usuario else None)
-        )
-        return data
+        return _serialize_factura_enriquecida(factura)
     except HTTPException:
         raise
     except Exception as e:
